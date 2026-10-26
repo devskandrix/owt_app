@@ -8,17 +8,20 @@ import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/gradient_text.dart';
 import '../../../../gen/assets.gen.dart';
 
-/// A section title with a gradient "View All" link, optionally preceded by
-/// the gradient trending-up icon (used by the "Trending" section).
+/// A section title with a gradient "View All" link (hidden when the
+/// section has nothing to show), optionally preceded by the gradient
+/// trending-up icon (used by the "Trending" section).
 class DashboardSectionHeader extends StatelessWidget {
   const DashboardSectionHeader({
     super.key,
     required this.title,
     this.showTrendingIcon = false,
+    this.showViewAll = true,
   });
 
   final String title;
   final bool showTrendingIcon;
+  final bool showViewAll;
 
   @override
   Widget build(BuildContext context) {
@@ -35,11 +38,12 @@ class DashboardSectionHeader extends StatelessWidget {
             style: AppTextStyles.sectionTitle.copyWith(color: textColor),
           ),
         ),
-        GradientText(
-          AppStrings.viewAllLabel,
-          gradient: AppGradients.button,
-          style: AppTextStyles.viewAll,
-        ),
+        if (showViewAll)
+          GradientText(
+            AppStrings.viewAllLabel,
+            gradient: AppGradients.button,
+            style: AppTextStyles.viewAll,
+          ),
       ],
     );
   }

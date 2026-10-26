@@ -53,7 +53,11 @@ class AuthUserModel {
     json = {
       ...json,
       'photos': _idsOf(json['photos'], key: 'id'),
-      'interests': _idsOf(json['interests'], key: 'interestId', fallbackKey: 'id'),
+      'interests': _idsOf(
+        json['interests'],
+        key: 'interestId',
+        fallbackKey: 'id',
+      ),
     };
     return _$AuthUserModelFromJson(json);
   }

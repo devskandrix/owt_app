@@ -28,4 +28,6 @@ HomeClubsModel _$HomeClubsModelFromJson(Map<String, dynamic> json) =>
               ?.map((e) => ClubModel.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
+      unreadNotificationCount: (json['unreadNotificationCount'] as num?)
+          ?.toInt(),
     );

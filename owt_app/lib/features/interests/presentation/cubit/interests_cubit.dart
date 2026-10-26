@@ -46,6 +46,12 @@ class InterestsCubit extends Cubit<InterestsState> {
     }
   }
 
+  /// Starts with [ids] selected, e.g. the user's current interests when
+  /// editing them from Profile.
+  void preselect(Set<String> ids) {
+    emit(state.copyWith(selectedIds: Set<String>.of(ids)));
+  }
+
   /// Returns false (without changing the selection) if [interestId] wasn't
   /// already selected and the cap of [maxSelected] has been reached.
   bool toggle(String interestId) {

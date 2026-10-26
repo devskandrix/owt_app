@@ -8,7 +8,7 @@ part 'club_model.g.dart';
 /// topClubs, nearYou, and recentlyViewed sections. `score`, `distanceMeters`,
 /// and `viewedAt` are section-specific and nullable since only one of them
 /// is populated depending on which list the item came from. `matchCount`
-/// is intentionally not modeled here.
+/// is only sent by `GET /clubs/search`.
 @JsonSerializable(createToJson: false)
 class ClubModel {
   final String id;
@@ -25,6 +25,11 @@ class ClubModel {
   final DateTime? viewedAt;
   final int? goingTonightNow;
   final int? viewCount;
+  final int? matchCount;
+
+  /// Whether the current user holds the Going Tonight badge at this club.
+  @JsonKey(defaultValue: false)
+  final bool isUserVerified;
 
   const ClubModel({
     required this.id,
@@ -41,6 +46,8 @@ class ClubModel {
     this.viewedAt,
     this.goingTonightNow,
     this.viewCount,
+    this.matchCount,
+    required this.isUserVerified,
   });
 
   factory ClubModel.fromJson(Map<String, dynamic> json) =>
@@ -61,5 +68,7 @@ class ClubModel {
     viewedAt: viewedAt,
     goingTonightNow: goingTonightNow,
     viewCount: viewCount,
+    matchCount: matchCount,
+    isUserVerified: isUserVerified,
   );
 }

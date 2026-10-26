@@ -6,11 +6,7 @@ class TodoListItem extends StatelessWidget {
   final Todo todo;
   final VoidCallback onToggle;
 
-  const TodoListItem({
-    super.key,
-    required this.todo,
-    required this.onToggle,
-  });
+  const TodoListItem({super.key, required this.todo, required this.onToggle});
 
   @override
   Widget build(BuildContext context) {

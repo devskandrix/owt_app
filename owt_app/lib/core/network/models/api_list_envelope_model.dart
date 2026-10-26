@@ -11,7 +11,16 @@ class ApiListEnvelopeModel {
   final List<dynamic>? data;
   final String? message;
 
-  const ApiListEnvelopeModel({required this.success, this.data, this.message});
+  /// Endpoint-specific extras alongside the list, e.g. pagination or
+  /// `GET /matchmaking/discover`'s `verifiedInterval`.
+  final Map<String, dynamic>? meta;
+
+  const ApiListEnvelopeModel({
+    required this.success,
+    this.data,
+    this.message,
+    this.meta,
+  });
 
   factory ApiListEnvelopeModel.fromJson(Map<String, dynamic> json) =>
       _$ApiListEnvelopeModelFromJson(json);

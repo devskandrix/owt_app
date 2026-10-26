@@ -6,101 +6,59 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_gradients.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../gen/assets.gen.dart';
-import '../../domain/entities/liked_user.dart';
+import '../../../matchmaking/domain/entities/received_like.dart';
+import 'likes_avatars.dart';
+import 'person_row.dart';
 
 /// One like: avatar, name, location, club, and Confirm / dismiss (X).
 class LikedUserTile extends StatelessWidget {
   const LikedUserTile({
     super.key,
-    required this.user,
-    required this.avatar,
+    required this.like,
     required this.onConfirm,
     required this.onDismiss,
+    this.busy = false,
   });
 
-  final LikedUser user;
-  final AssetGenImage avatar;
+  final ReceivedLike like;
   final VoidCallback onConfirm;
   final VoidCallback onDismiss;
+
+  /// Accept in flight: Confirm shows a spinner and both actions are off.
+  final bool busy;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    return SizedBox(
-      height: 58,
-      child: Row(
-        children: [
-          ClipOval(
-            child: avatar.image(width: 58, height: 58, fit: BoxFit.cover),
+    return PersonRow(
+      avatar: likeAvatar(like),
+      name: like.name,
+      location: like.location,
+      clubName: like.clubName,
+      clubImageUrl: like.clubImageUrl,
+      trailing: [
+        _ConfirmButton(onPressed: busy ? null : onConfirm, busy: busy),
+        const SizedBox(width: 8),
+        GestureDetector(
+          onTap: busy ? null : onDismiss,
+          behavior: HitTestBehavior.opaque,
+          child: SvgPicture.asset(
+            Assets.icons.closeSmall,
+            width: 20,
+            height: 20,
+            colorFilter: ColorFilter.mode(colors.textPrimary, BlendMode.srcIn),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  user.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.likesName.copyWith(
-                    color: colors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(user.location, style: AppTextStyles.likesCaption),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    ClipOval(
-                      child: Assets.images.likesClubIcon.image(
-                        width: 18,
-                        height: 18,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Flexible(
-                      child: Text(
-                        user.clubName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.likesClub.copyWith(
-                          color: colors.textPrimary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          _ConfirmButton(onPressed: onConfirm),
-          const SizedBox(width: 8),
-          GestureDetector(
-            onTap: onDismiss,
-            behavior: HitTestBehavior.opaque,
-            child: SvgPicture.asset(
-              Assets.icons.closeSmall,
-              width: 20,
-              height: 20,
-              colorFilter: ColorFilter.mode(
-                colors.textPrimary,
-                BlendMode.srcIn,
-              ),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
 
 class _ConfirmButton extends StatelessWidget {
-  const _ConfirmButton({required this.onPressed});
+  const _ConfirmButton({required this.onPressed, this.busy = false});
 
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
+  final bool busy;
 
   static const BorderRadius _radius = BorderRadius.all(Radius.circular(38));
 
@@ -116,14 +74,32 @@ class _ConfirmButton extends StatelessWidget {
         child: InkWell(
           borderRadius: _radius,
           onTap: onPressed,
-          child: const SizedBox(
+          child: SizedBox(
             height: 36,
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 17),
+              padding: const EdgeInsets.symmetric(horizontal: 17),
               child: Center(
-                child: Text(
-                  AppStrings.likesConfirm,
-                  style: AppTextStyles.likesConfirm,
+                // Keeps the button's width while the spinner shows.
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Opacity(
+                      opacity: busy ? 0 : 1,
+                      child: const Text(
+                        AppStrings.likesConfirm,
+                        style: AppTextStyles.likesConfirm,
+                      ),
+                    ),
+                    if (busy)
+                      const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),

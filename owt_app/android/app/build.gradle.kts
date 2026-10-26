@@ -9,12 +9,16 @@ plugins {
 
 android {
     namespace = "com.example.owt"
-    compileSdk = flutter.compileSdkVersion
+    // 37 (above Flutter's default) is required by permission_handler_android,
+    // which ZEGOCLOUD's call kit uses. Doesn't change the minimum Android version.
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        // Required by flutter_local_notifications.
+        isCoreLibraryDesugaringEnabled = true
     }
 
     defaultConfig {
@@ -60,4 +64,8 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }

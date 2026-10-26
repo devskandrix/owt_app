@@ -38,9 +38,11 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Take a photo to add to your profile.</string>
+	<string>Take photos for your profile and use your camera in video calls.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>We use your location to verify that you’re near the club and activate your going tonight badge.</string>
+	<string>We use your location to show clubs near you and to verify that you’re near the club when you activate your going tonight badge.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Use your microphone in voice and video calls and to send voice messages.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Choose photos from your library to add to your profile.</string>
 	<key>UIApplicationSceneManifest</key>
@@ -66,6 +68,11 @@
 	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+		<string>audio</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

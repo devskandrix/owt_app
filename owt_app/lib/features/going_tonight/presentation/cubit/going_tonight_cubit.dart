@@ -1,28 +1,23 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:geolocator/geolocator.dart';
 
+import '../../../../core/error/failures.dart';
 import '../../../../core/services/location_service.dart';
+import '../../../matchmaking/domain/usecases/check_in_going_tonight.dart';
 import 'going_tonight_state.dart';
 
-/// Verifies the user is physically at a venue before activating their
-/// Going Tonight badge: asks for location permission, reads a live
-/// position, and — when the venue's coordinates are known — checks the
-/// user is within [maxDistanceMeters] of it.
-///
-/// TODO: once the backend exposes a Going Tonight endpoint, send the
-/// position there instead and take `validUntil` from its response.
+/// Activates the user's Going Tonight badge: asks for location permission,
+/// reads a live position, and checks in with it via
+/// `POST /matchmaking/going-tonight` — the server decides which club the
+/// user is at and when the badge expires.
 class GoingTonightCubit extends Cubit<GoingTonightState> {
-  GoingTonightCubit(
-    this._locationService, {
-    this.venueLatitude,
-    this.venueLongitude,
-  }) : super(const GoingTonightState());
+  GoingTonightCubit(this._locationService, this._checkIn, {this.clubId})
+    : super(const GoingTonightState());
 
   final LocationService _locationService;
-  final double? venueLatitude;
-  final double? venueLongitude;
+  final CheckInGoingTonight _checkIn;
 
-  static const double maxDistanceMeters = 300;
+  /// The club the user is getting the badge for, sent with the check-in.
+  final String? clubId;
 
   /// Keeps the "Verifying…" step on screen long enough to read, matching
   /// the "This usually takes 3-5 second" copy.
@@ -48,34 +43,37 @@ class GoingTonightCubit extends Cubit<GoingTonightState> {
     }
 
     final position = await _locationService.getCurrentPosition();
-    await _waitAtLeast(started);
-    if (isClosed) return;
     if (position == null) {
+      await _waitAtLeast(started);
       _fail(GoingTonightFailure.locationUnavailable);
       return;
     }
 
-    final lat = venueLatitude;
-    final lng = venueLongitude;
-    if (lat != null && lng != null) {
-      final distance = Geolocator.distanceBetween(
-        position.latitude,
-        position.longitude,
-        lat,
-        lng,
+    try {
+      final badge = await _checkIn(
+        CheckInGoingTonightParams(
+          clubId: clubId,
+          latitude: position.latitude,
+          longitude: position.longitude,
+        ),
       );
-      if (distance > maxDistanceMeters) {
-        _fail(GoingTonightFailure.notNearVenue);
-        return;
-      }
+      await _waitAtLeast(started);
+      if (isClosed) return;
+      emit(
+        GoingTonightState(
+          status: GoingTonightStatus.verified,
+          clubId: badge.clubId,
+          clubName: badge.clubName,
+          validUntil: badge.expiresAt?.toLocal(),
+        ),
+      );
+    } on Failure catch (f) {
+      await _waitAtLeast(started);
+      _fail(GoingTonightFailure.checkInFailed, message: f.message);
+    } catch (_) {
+      await _waitAtLeast(started);
+      _fail(GoingTonightFailure.checkInFailed);
     }
-
-    emit(
-      GoingTonightState(
-        status: GoingTonightStatus.verified,
-        validUntil: _nextFiveAm(DateTime.now()),
-      ),
-    );
   }
 
   Future<void> openLocationSettings() async {
@@ -83,12 +81,13 @@ class GoingTonightCubit extends Cubit<GoingTonightState> {
     if (access != null) await _locationService.openSettingsFor(access);
   }
 
-  void _fail(GoingTonightFailure failure) {
+  void _fail(GoingTonightFailure failure, {String? message}) {
     if (isClosed) return;
     emit(
       GoingTonightState(
         status: GoingTonightStatus.failure,
         failure: failure,
+        errorMessage: message,
       ),
     );
   }
@@ -96,12 +95,5 @@ class GoingTonightCubit extends Cubit<GoingTonightState> {
   Future<void> _waitAtLeast(DateTime started) async {
     final remaining = _minVerifyDuration - DateTime.now().difference(started);
     if (remaining > Duration.zero) await Future<void>.delayed(remaining);
-  }
-
-  /// A night out ends at 5:00 AM — today's if it's still before then,
-  /// otherwise tomorrow's.
-  static DateTime _nextFiveAm(DateTime now) {
-    final today = DateTime(now.year, now.month, now.day, 5);
-    return now.isBefore(today) ? today : today.add(const Duration(days: 1));
   }
 }

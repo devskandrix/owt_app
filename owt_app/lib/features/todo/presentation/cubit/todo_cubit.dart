@@ -40,12 +40,14 @@ class TodoCubit extends Cubit<TodoState> {
   Future<void> toggle(String id) async {
     try {
       final updated = await toggleTodo(ToggleTodoParams(id));
-      emit(state.copyWith(
-        todos: [
-          for (final todo in state.todos)
-            if (todo.id == updated.id) updated else todo,
-        ],
-      ));
+      emit(
+        state.copyWith(
+          todos: [
+            for (final todo in state.todos)
+              if (todo.id == updated.id) updated else todo,
+          ],
+        ),
+      );
     } catch (e) {
       emit(state.copyWith(status: TodoStatus.failure, errorMessage: '$e'));
     }

@@ -6,7 +6,10 @@ import '../entities/social_auth_result.dart';
 abstract class AuthRepository {
   /// Exchanges a social provider's ID token for our backend's own session,
   /// via `POST /auth/social/:provider`.
-  Future<SocialAuthResult> signInWithSocialProvider({required SocialAuthProvider provider, required String idToken});
+  Future<SocialAuthResult> signInWithSocialProvider({
+    required SocialAuthProvider provider,
+    required String idToken,
+  });
 
   /// Sends an OTP to [phoneNumber] for the in-progress signup, via
   /// `POST /auth/signup/phone/send-otp` (authorized by the signup token
@@ -28,4 +31,9 @@ abstract class AuthRepository {
     required DateTime dateOfBirth,
     required Gender gender,
   });
+
+  /// Ends the session server-side via `POST /auth/logout`, sending the
+  /// stored refresh token. Does nothing if no refresh token is stored.
+  /// Doesn't clear local tokens; the caller does that.
+  Future<void> logout();
 }

@@ -9,6 +9,7 @@ abstract final class TokenStorage {
   static const _refreshTokenKey = 'auth_refresh_token';
   static const _signupTokenKey = 'auth_signup_token';
   static const _signupEmailKey = 'auth_signup_email';
+  static const _fcmTokenKey = 'fcm_token';
 
   /// A logged-in session's tokens (an already-registered user).
   static Future<void> saveSession({
@@ -56,6 +57,13 @@ abstract final class TokenStorage {
 
   static Future<void> clearSignupEmail() =>
       _storage.delete(key: _signupEmailKey);
+
+  /// The FCM token last sent to `POST /users/me/device-token`, so a
+  /// rotated token can be sent with it as `previousToken`.
+  static Future<void> saveFcmToken(String token) =>
+      _storage.write(key: _fcmTokenKey, value: token);
+
+  static Future<String?> readFcmToken() => _storage.read(key: _fcmTokenKey);
 
   static Future<void> clear() => _storage.deleteAll();
 }

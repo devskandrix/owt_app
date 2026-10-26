@@ -14,11 +14,17 @@ class SwipeableCard extends StatefulWidget {
     required this.child,
     required this.onSwipeLeft,
     required this.onSwipeRight,
+    this.resetAfterSwipe = true,
   });
 
   final Widget child;
   final VoidCallback onSwipeLeft;
   final VoidCallback onSwipeRight;
+
+  /// Snap back to center once the swipe callback has run — for a deck that
+  /// reuses the card for the next profile. Turn off when the swipe closes
+  /// the screen, so the card doesn't flash back during the transition.
+  final bool resetAfterSwipe;
 
   @override
   State<SwipeableCard> createState() => SwipeableCardState();
@@ -72,7 +78,9 @@ class SwipeableCardState extends State<SwipeableCard>
     await _controller.forward(from: 0);
     _offsetAnimation = null;
     right ? widget.onSwipeRight() : widget.onSwipeLeft();
-    if (mounted) _dragOffsetCubit.update(Offset.zero);
+    if (mounted && widget.resetAfterSwipe) {
+      _dragOffsetCubit.update(Offset.zero);
+    }
   }
 
   // Horizontal-only drag (not onPan) so vertical drags fall through to the

@@ -28,5 +28,6 @@ class Country {
 
   /// A real flag image (flagcdn.com, free and keyless) that fills a circle
   /// cleanly, unlike the emoji glyph.
-  String get flagImageUrl => 'https://flagcdn.com/w80/${isoCode.toLowerCase()}.png';
+  String get flagImageUrl =>
+      'https://flagcdn.com/w80/${isoCode.toLowerCase()}.png';
 }

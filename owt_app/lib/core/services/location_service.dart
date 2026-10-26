@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 
 /// Outcome of [LocationService.requestAccess], so callers that *require*
@@ -71,9 +72,14 @@ class LocationService {
 
   /// Reads the current position only if location is already allowed —
   /// never shows the OS permission prompt. Asking is left to
-  /// [requestAccess], which the Going Tonight flow calls after its own
-  /// explainer dialog.
+  /// [requestAccess], which Home and the Going Tonight flow call after
+  /// their own explainer dialog.
+  ///
+  /// Debug builds skip GPS and always return [_debugPosition], so Going
+  /// Tonight can be verified from the simulator. Release builds always use
+  /// the device's real location.
   Future<Position?> getCurrentPosition() async {
+    if (kDebugMode) return _debugPosition();
     try {
       if (!await hasAccess()) return null;
 
@@ -99,4 +105,21 @@ class LocationService {
   }
 
   static const Duration _maxLastKnownAge = Duration(minutes: 5);
+
+  /// Fixed test location for debug builds (Surat).
+  static const double _debugLatitude = 21.183301;
+  static const double _debugLongitude = 72.786137;
+
+  static Position _debugPosition() => Position(
+    latitude: _debugLatitude,
+    longitude: _debugLongitude,
+    timestamp: DateTime.now(),
+    accuracy: 5,
+    altitude: 0,
+    altitudeAccuracy: 0,
+    heading: 0,
+    headingAccuracy: 0,
+    speed: 0,
+    speedAccuracy: 0,
+  );
 }

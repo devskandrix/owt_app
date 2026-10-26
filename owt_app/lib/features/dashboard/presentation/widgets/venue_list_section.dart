@@ -9,7 +9,11 @@ import 'venue_card.dart';
 /// A titled horizontal row of [VenueCard]s (Top Clubs / Near You /
 /// Recently Viewed).
 class VenueListSection extends StatelessWidget {
-  const VenueListSection({super.key, required this.title, required this.venues});
+  const VenueListSection({
+    super.key,
+    required this.title,
+    required this.venues,
+  });
 
   final String title;
   final List<Venue> venues;
@@ -29,7 +33,10 @@ class VenueListSection extends StatelessWidget {
             itemCount: venues.length,
             separatorBuilder: (context, index) => const SizedBox(width: 12),
             itemBuilder: (context, index) => GestureDetector(
-              onTap: () => context.pushNamed(AppRoute.match.name),
+              onTap: () => context.pushNamed(
+                AppRoute.match.name,
+                extra: venues[index].club,
+              ),
               child: VenueCard(venue: venues[index], width: 137),
             ),
           ),

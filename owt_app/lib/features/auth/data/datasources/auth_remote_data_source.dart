@@ -47,4 +47,14 @@ abstract class AuthRemoteDataSource {
     @Header('Authorization') String bearerToken,
     @Body() RegisterRequestModel body,
   );
+
+  /// Revokes [body]'s `refreshToken` server-side. Mobile has no refresh
+  /// cookie, so the token goes in the body. A 401 here must not trigger a
+  /// session refresh (see `DioClient.skipAuthRefresh`).
+  @POST('/auth/logout')
+  @Extra({'skipAuthRefresh': true})
+  Future<ApiEnvelopeModel> logout(
+    @Header('Authorization') String bearerToken,
+    @Body() Map<String, dynamic> body,
+  );
 }

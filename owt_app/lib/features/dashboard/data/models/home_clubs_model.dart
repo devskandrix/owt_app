@@ -17,11 +17,15 @@ class HomeClubsModel {
   @JsonKey(defaultValue: [])
   final List<ClubModel> recentlyViewed;
 
+  /// Bell badge count, sent alongside the lists. Null if the server omits it.
+  final int? unreadNotificationCount;
+
   const HomeClubsModel({
     required this.trending,
     required this.topClubs,
     required this.nearYou,
     required this.recentlyViewed,
+    this.unreadNotificationCount,
   });
 
   factory HomeClubsModel.fromJson(Map<String, dynamic> json) =>
@@ -32,5 +36,6 @@ class HomeClubsModel {
     topClubs: topClubs.map((club) => club.toEntity()).toList(),
     nearYou: nearYou.map((club) => club.toEntity()).toList(),
     recentlyViewed: recentlyViewed.map((club) => club.toEntity()).toList(),
+    unreadNotificationCount: unreadNotificationCount,
   );
 }

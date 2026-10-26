@@ -3,11 +3,14 @@ import 'package:dio/dio.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/storage/token_storage.dart';
 import '../../domain/entities/club.dart';
+import '../../domain/entities/club_search_page.dart';
 import '../../domain/entities/home_clubs.dart';
+import '../../domain/entities/search_history_item.dart';
 import '../../domain/repositories/clubs_repository.dart';
 import '../datasources/clubs_remote_data_source.dart';
 import '../models/club_model.dart';
 import '../models/home_clubs_model.dart';
+import '../models/search_history_item_model.dart';
 
 class ClubsRepositoryImpl implements ClubsRepository {
   final ClubsRemoteDataSource remoteDataSource;
@@ -31,6 +34,121 @@ class ClubsRepositoryImpl implements ClubsRepository {
       return HomeClubsModel.fromJson(envelope.data ?? const {}).toEntity();
     } on DioException catch (e) {
       throw _mapDioException(e, fallbackMessage: 'Failed to load clubs.');
+    }
+  }
+
+  @override
+  Future<ClubSearchPage> search({
+    String? query,
+    String? city,
+    String? country,
+    int? limit,
+    int? page,
+  }) async {
+    final bearerToken = await _readBearerToken();
+
+    try {
+      final envelope = await remoteDataSource.search(
+        bearerToken,
+        query,
+        city,
+        country,
+        limit,
+        page,
+      );
+      if (!envelope.success) {
+        throw ServerFailure(envelope.message ?? 'Failed to search clubs.');
+      }
+
+      final clubs = [
+        for (final json in envelope.data ?? const [])
+          if (json is Map<String, dynamic>) ClubModel.fromJson(json).toEntity(),
+      ];
+      final meta = envelope.meta ?? const <String, dynamic>{};
+      final resolvedPage = _int(meta['page']) ?? page ?? 1;
+      return ClubSearchPage(
+        clubs: clubs,
+        total: _int(meta['total']) ?? clubs.length,
+        page: resolvedPage,
+        limit: _int(meta['limit']) ?? limit ?? clubs.length,
+        totalPages: _int(meta['totalPages']) ?? resolvedPage,
+      );
+    } on DioException catch (e) {
+      throw _mapDioException(e, fallbackMessage: 'Failed to search clubs.');
+    }
+  }
+
+  @override
+  Future<void> saveSearchHistory({
+    required String clubId,
+    String? query,
+  }) async {
+    const fallback = 'Failed to save search.';
+    final bearerToken = await _readBearerToken();
+    try {
+      final envelope = await remoteDataSource.saveSearchHistory(bearerToken, {
+        'clubId': clubId,
+        if (query != null && query.isNotEmpty) 'query': query,
+      });
+      if (!envelope.success) {
+        throw ServerFailure(envelope.message ?? fallback);
+      }
+    } on DioException catch (e) {
+      throw _mapDioException(e, fallbackMessage: fallback);
+    }
+  }
+
+  @override
+  Future<List<SearchHistoryItem>> getSearchHistory({int? limit}) async {
+    const fallback = 'Failed to load recent searches.';
+    final bearerToken = await _readBearerToken();
+    try {
+      final envelope = await remoteDataSource.getSearchHistory(
+        bearerToken,
+        limit,
+      );
+      if (!envelope.success) {
+        throw ServerFailure(envelope.message ?? fallback);
+      }
+      return [
+        for (final json in envelope.data ?? const [])
+          // Skip entries whose club was removed server-side.
+          if (json is Map<String, dynamic> && json['club'] is Map)
+            SearchHistoryItemModel.fromJson(json).toEntity(),
+      ];
+    } on DioException catch (e) {
+      throw _mapDioException(e, fallbackMessage: fallback);
+    }
+  }
+
+  @override
+  Future<void> deleteSearchHistory(String historyId) async {
+    const fallback = 'Failed to remove search.';
+    final bearerToken = await _readBearerToken();
+    try {
+      final envelope = await remoteDataSource.deleteSearchHistory(
+        bearerToken,
+        historyId,
+      );
+      if (!envelope.success) {
+        throw ServerFailure(envelope.message ?? fallback);
+      }
+    } on DioException catch (e) {
+      throw _mapDioException(e, fallbackMessage: fallback);
+    }
+  }
+
+  @override
+  Future<void> clearSearchHistory() async {
+    const fallback = 'Failed to clear recent searches.';
+    final bearerToken = await _readBearerToken();
+    try {
+      final envelope = await remoteDataSource.clearSearchHistory(bearerToken);
+      if (!envelope.success) {
+        throw ServerFailure(envelope.message ?? fallback);
+      }
+    } on DioException catch (e) {
+      throw _mapDioException(e, fallbackMessage: fallback);
     }
   }
 
@@ -60,6 +178,8 @@ class ClubsRepositoryImpl implements ClubsRepository {
       );
     }
   }
+
+  static int? _int(Object? value) => value is num ? value.toInt() : null;
 
   Future<String> _readBearerToken() async {
     final accessToken = await TokenStorage.readAccessToken();

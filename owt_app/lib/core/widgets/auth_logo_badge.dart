@@ -15,11 +15,17 @@ class AuthLogoBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Assets.images.owtLogoPng.image(width: 118, height: 64, fit: BoxFit.contain),
+        Assets.images.owtLogoPng.image(
+          width: 118,
+          height: 64,
+          fit: BoxFit.contain,
+        ),
         const SizedBox(height: 5),
         Text(
           AppStrings.tagline,
-          style: AppTextStyles.logoBadgeTagline.copyWith(color: context.appColors.logoTagline),
+          style: AppTextStyles.logoBadgeTagline.copyWith(
+            color: context.appColors.logoTagline,
+          ),
         ),
       ],
     );

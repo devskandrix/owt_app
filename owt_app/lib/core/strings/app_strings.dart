@@ -89,20 +89,35 @@ abstract final class AppStrings {
   static const String choosePhotoSourceTitle = 'Add Photo';
   static const String takePhoto = 'Take Photo';
   static const String chooseFromGallery = 'Choose from Gallery';
-  static const String unsupportedPhotoFormat = 'Please choose a JPEG, PNG, or WEBP photo.';
+  static const String unsupportedPhotoFormat =
+      'Please choose a JPEG, PNG, or WEBP photo.';
   static const String photoTooLarge = 'Photo must be smaller than 8MB.';
   static const String tipsTitle = 'Tips for great photos';
-  static const String tipsDescription = 'Use good lighting, show different angles, and let your personality shine.';
+  static const String tipsDescription =
+      'Use good lighting, show different angles, and let your personality shine.';
 
   // ---------------------------------------------------------------------
   // Dashboard screen
   // ---------------------------------------------------------------------
   static const String searchClubHint = 'Search Club';
+  static const String searchNoResults = 'No clubs match your search.';
+  static const String searchRecentTitle = 'Recent';
+  static const String searchClearAll = 'Clear All';
+  static const String searchAllClubsTitle = 'All Clubs';
+  static const String searchRemoveRecent = 'Remove from recent';
+  static const String searchClearConfirmTitle = 'Clear recent searches?';
+  static const String searchClearConfirmMessage =
+      'This removes all clubs from your recent searches.';
   static const String trendingSectionTitle = 'Trending';
   static const String topClubsSectionTitle = 'Top Clubs';
   static const String nearYouSectionTitle = 'Near You';
   static const String recentlyViewSectionTitle = 'Recently View';
   static const String viewAllLabel = 'View All';
+  static const String dashboardLocationMessage =
+      'We use your location to show clubs near you and how far away they are.';
+  static const String dashboardAllowLocation = 'Allow Location';
+  static const String trendingEmptyMessage =
+      'No clubs are trending right now. Check back later tonight.';
   static const String dashboardErrorTitle = "Couldn't load clubs";
   static const String dashboardEmptyTitle = 'No clubs out tonight';
   static const String dashboardEmptyMessage =
@@ -133,20 +148,29 @@ abstract final class AppStrings {
   // Profile screen
   // ---------------------------------------------------------------------
   static const String profileTitle = 'My Profile';
-  static const String profileName = 'Alex';
-  static const String profileTag = 'Ibiza Lover';
-  static const String profileTagline =
-      'Always down for good music, greate people and unforgettable nights';
-  static const String profileBio =
-      'Non nobis quod asperiores est animi blanditiis velit nesciunt. Praesentium nihil dignissimos nihil quasi. '
-      'Amet non quia ut rerum nesciunt. Est accusantium debitis perferendis neque aut est.';
+  static const String profileFriends = 'Friends';
+  static const String friendsEmpty = 'No friends yet';
+  static const String friendProfile = 'Profile';
+  static const String interestsLabel = 'Interests';
+  static const String editInterestsHeadline = 'Edit your interests';
+  static const String yourPhotosLabel = 'Your Photos';
+  static const String editLabel = 'Edit';
+  static const String editPhotosLabel = 'Edit Photos';
+  static const String editPhotosHeadline = 'Edit your photos';
+  static const String editPhotosSubtitle =
+      'Keep at least 3 photos on your profile';
+  static const String doneLabel = 'Done';
+  static const String minPhotosReached =
+      'Keep at least 3 photos. Add another before removing this one.';
+  static const String photoOptionsTitle = 'Photo';
+  static const String replacePhoto = 'Replace Photo';
+  static const String deletePhoto = 'Delete Photo';
+  static const String saveLabel = 'Save';
 
   // ---------------------------------------------------------------------
   // Match (swipeable profile) screen
   // ---------------------------------------------------------------------
   static const String matchVenueChipName = 'lord of drinks...';
-  static const String matchOnlineCount = '75400';
-  static const String matchFireCount = '7005';
   static const String matchProfileName = 'Alvin Fritsch';
   static const String matchGoingTonight = 'Going Tonight';
   static const String interestedInLabel = 'Interested In';
@@ -158,6 +182,14 @@ abstract final class AppStrings {
   static const String tagVipTables = 'VIP Tables';
   static const String tagBeachClub = 'Beach Club';
   static const String matchVenueName = 'Lord of Drinks Ibiza';
+  static const String matchQueueEmptyTitle = 'You’re all caught up';
+  static const String matchQueueEmptyMessage =
+      'No one new at this club right now. Check back in a bit.';
+  static const String matchLoadFailedTitle = 'Couldn’t load people';
+  static const String matchBadgeAtOtherClub =
+      'Your Going Tonight badge is for another club. Head to this club and verify again to see who’s here.';
+  static String matchItsAMatch(String name) =>
+      'It’s a match! You and $name like each other.';
   static const String matchVenueCity = 'Ibiza';
 
   // ---------------------------------------------------------------------
@@ -181,8 +213,9 @@ abstract final class AppStrings {
   static const String goingTonightHowToGetBadge = 'How i get this badge ?';
   static const String goingTonightHowToGetBadgeAnswer =
       'Tap Verify Mine while you’re at the club. We check your live location '
-      'once, and your badge stays active until 5:00 AM.';
-  static const String goingTonightVerifyingTitle = 'Verifying your location ....';
+      'once, and your badge stays active until 7:00 AM.';
+  static const String goingTonightVerifyingTitle =
+      'Verifying your location ....';
   static String goingTonightCheckingNear(String venue) =>
       'Checking you’re near $venue';
   static const String goingTonightTakesSeconds =
@@ -192,7 +225,7 @@ abstract final class AppStrings {
   static const String goingTonightSuccessBody =
       'Your Badge is now active.\nOthers can see that you’re going tonight.';
   static const String goingTonightVerifiedFor = 'Verified for';
-  static String goingTonightValidUntil(String time) => 'Valid until $time';
+  static const String goingTonightValidUntil = 'Valid until 7:00AM';
   static const String goingTonightStartMatching = 'Start Matching';
   static const String goingTonightMaybeLater = 'Maybe Later';
   static const String goingTonightFailedTitle = 'Couldn’t verify your location';
@@ -204,11 +237,9 @@ abstract final class AppStrings {
       'Location access is off for OWT. Allow it in Settings to get your badge.';
   static const String goingTonightLocationUnavailable =
       'We couldn’t get your location. Move somewhere with better signal and try again.';
-  static String goingTonightNotNearVenue(String venue) =>
-      'It looks like you’re not at $venue yet. Try again once you arrive.';
   static const String goingTonightOpenSettings = 'Open Settings';
   static const String goingTonightLocationTitle =
-    'Allow “OWT” To Use Your Location ?';
+      'Allow “OWT” To Use Your Location ?';
   static const String goingTonightLocationBody =
       'We use your location to verify that you’re near the club and activate '
       'your going tonight badge.';
@@ -226,15 +257,114 @@ abstract final class AppStrings {
   static const String settingsAboutApp = 'About App';
   static const String settingsDeactivateAccount = 'De active Account';
   static const String settingsLogOut = 'Log out';
+  static const String logOutConfirmTitle = 'Log out?';
+  static const String logOutConfirmMessage =
+      'You’ll need to sign in again to see who’s going tonight.';
+  static const String cancelLabel = 'Cancel';
+  static const String deactivateConfirmTitle = 'Deactivate account?';
+  static const String deactivateConfirmMessage =
+      'Your profile will be hidden and you’ll be signed out.';
+  static const String deactivateConfirmLabel = 'Deactivate';
+
+  // ---------------------------------------------------------------------
+  // About App screen
+  // ---------------------------------------------------------------------
+  static const String aboutTitle = 'About App';
+  static const String aboutVersionPrefix = 'Version ';
+  static const String aboutIntro =
+      'OWT shows you who’s really going out tonight. Pick a club, let people '
+      'know you’re heading there, and match with others who’ll be in the '
+      'same room — so the night starts before you walk in.';
+
+  static const String aboutHowItWorksTitle = 'How it works';
+  static const String aboutStep1Title = 'Find your club';
+  static const String aboutStep1Desc =
+      'Browse trending spots, top clubs and venues near you.';
+  static const String aboutStep2Title = 'Tap “Going Tonight”';
+  static const String aboutStep2Desc =
+      'Let people know where you’ll be and unlock that club’s crowd.';
+  static const String aboutStep3Title = 'Swipe & match';
+  static const String aboutStep3Desc =
+      'Like the people heading to the same place. A like back is a match.';
+  static const String aboutStep4Title = 'Chat & meet up';
+  static const String aboutStep4Desc =
+      'Message or call your matches and meet them on the night.';
+
+  static const String aboutWhyTitle = 'Why OWT';
+  static const String aboutWhyRealTitle = 'Real plans';
+  static const String aboutWhyRealDesc =
+      'Everyone you see is heading out tonight, not just browsing.';
+  static const String aboutWhyLiveTitle = 'Live club vibes';
+  static const String aboutWhyLiveDesc =
+      'See how many people are going and what’s trending right now.';
+  static const String aboutWhyVerifiedTitle = 'Verified members';
+  static const String aboutWhyVerifiedDesc =
+      'Phone-verified accounts and Going Tonight badges.';
+  static const String aboutWhyNearbyTitle = 'Near you';
+  static const String aboutWhyNearbyDesc =
+      'Clubs sorted by distance so the best night is close by.';
+
+  static const String aboutSafetyTitle = 'Your safety comes first';
+  static const String aboutSafety1 =
+      'OWT is for adults 18+ only. Please drink responsibly.';
+  static const String aboutSafety2 =
+      'Your exact location is never shown to other members.';
+  static const String aboutSafety3 =
+      'Your phone number stays private and is only used for verification.';
+  static const String aboutSafety4 =
+      'Meet matches at the venue or in public places, and tell a friend '
+      'where you’re going.';
+
+  static const String aboutPartnerTitle = 'Own a club or venue?';
+  static const String aboutPartnerDesc =
+      'Partner with OWT to feature your venue, promote events and reach '
+      'people who are going out tonight.';
+  static const String aboutPartnerAction = 'Partner with us';
+
+  static const String aboutContactUs = 'Contact Us';
+  static const String aboutEmailCopied = 'Email copied to clipboard.';
+
+  // TODO: replace with the real support and partnership addresses.
+  static const String aboutSupportEmail = 'support@owtapp.com';
+  static const String aboutPartnerEmail = 'partners@owtapp.com';
+
+  static const String aboutFooter = 'Made for nights out';
+  static const String aboutCopyrightSuffix = ' OWT. All rights reserved.';
 
   // ---------------------------------------------------------------------
   // Notification screen
   // ---------------------------------------------------------------------
   static const String notificationScreenTitle = 'Notification';
-  static const String notificationUnreadViewTitle = 'Notification Unread View';
-  static const String notificationUnreadViewBody =
-      'Amet minim mollit non deserunt ullamco est sit aliqua dolor do amet sint.';
-  static const String notificationTimestamp = '12 Jan 2022 | 12:00 PM';
+  static const String notificationsEmpty = 'No notifications yet';
+
+  // ---------------------------------------------------------------------
+  // Chat (ZEGOCLOUD)
+  // ---------------------------------------------------------------------
+  static const String messagesTitle = 'Messages';
+  static const String messageFriend = 'Message';
+  static const String voiceCallPermissionNeeded =
+      'Microphone access is needed for voice calls.';
+  static const String videoCallPermissionNeeded =
+      'Camera and microphone access are needed for video calls.';
+  static const String enableInSettings = 'Turn it on in Settings.';
+  static const String callFailed = 'Couldn’t start the call. Try again.';
+  static const String videoCallTooltip = 'Video call';
+  static const String voiceCallTooltip = 'Voice call';
+  static const String messagesEmpty =
+      'No messages yet. Open a friend’s profile to start chatting.';
+  static const String chatUnavailable = 'Chat isn’t available right now.';
+  static const String messagesSectionTitle = 'Message';
+  static const String chatNewMessages = 'New Message';
+  static const String chatYouPrefix = 'You: ';
+  static const String chatPhoto = 'Photo';
+  static const String chatVideo = 'Video';
+  static const String chatVoiceMessage = 'Voice message';
+  static const String chatFile = 'File';
+  static const String chatInputHint = 'Type Something..';
+  static const String chatCopied = 'Message copied';
+  static const String chatSendFailed = 'Not sent';
+  static const String notificationQueueRemovedTitle = 'Removed from queue';
+  static const String notificationDefaultTitle = 'Notification';
 
   // ---------------------------------------------------------------------
   // Likes screen
@@ -248,6 +378,9 @@ abstract final class AppStrings {
   static const String likesMatchBody =
       'You both like each other now you can chat , and enjoy audio & video calls.';
   static const String likesEmpty = 'No new likes yet';
+  static const String pendingRequestTitle = 'Pending Request';
+  static const String pendingRequestSubtitle =
+      'Kindly accept or reject Request';
 
   // ---------------------------------------------------------------------
   // Todo screen (example feature scaffold)

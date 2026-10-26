@@ -62,15 +62,18 @@ class TrendingCard extends StatelessWidget {
             // of a few-pixel bottom overflow on devices with a larger system
             // font scale than the one this was designed against.
             child: MediaQuery(
-              data: MediaQuery.of(
-                context,
-              ).copyWith(textScaler: TextScaler.noScaling),
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: TextScaler.noScaling),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      SvgPicture.asset(Assets.icons.fire, width: 15, height: 15),
+                      SvgPicture.asset(
+                        Assets.icons.fire,
+                        width: 15,
+                        height: 15,
+                      ),
                       const SizedBox(width: 2),
                       Expanded(
                         child: Text(

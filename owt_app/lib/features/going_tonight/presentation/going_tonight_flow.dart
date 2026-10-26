@@ -19,8 +19,7 @@ Future<GoingTonightOutcome?> showGoingTonightFlow(
   BuildContext context, {
   required String venueName,
   required String venueCity,
-  double? venueLatitude,
-  double? venueLongitude,
+  String? clubId,
 }) async {
   final wantsToVerify = await showModalBottomSheet<bool>(
     context: context,
@@ -33,12 +32,12 @@ Future<GoingTonightOutcome?> showGoingTonightFlow(
     context,
     venueName: venueName,
     venueCity: venueCity,
-    venueLatitude: venueLatitude,
-    venueLongitude: venueLongitude,
+    clubId: clubId,
   );
 }
 
-/// Location explainer -> OS prompt -> verification -> success. The
+/// Location explainer -> OS prompt -> verification (check-in at [clubId])
+/// -> success. The
 /// explainer only shows when the OS prompt will follow it; if location is
 /// already allowed, verification starts straight away, and if it's off or
 /// denied, verification shows its Open Settings card.
@@ -49,8 +48,7 @@ Future<GoingTonightOutcome?> verifyGoingTonight(
   BuildContext context, {
   required String venueName,
   required String venueCity,
-  double? venueLatitude,
-  double? venueLongitude,
+  String? clubId,
 }) async {
   if (await sl<LocationService>().canPromptForPermission()) {
     if (!context.mounted) return null;
@@ -66,11 +64,7 @@ Future<GoingTonightOutcome?> verifyGoingTonight(
     context: context,
     barrierDismissible: false,
     builder: (_) => BlocProvider(
-      create: (_) => GoingTonightCubit(
-        sl(),
-        venueLatitude: venueLatitude,
-        venueLongitude: venueLongitude,
-      )..verify(),
+      create: (_) => GoingTonightCubit(sl(), sl(), clubId: clubId)..verify(),
       child: GoingTonightVerifyDialog(
         venueName: venueName,
         venueCity: venueCity,

@@ -9,23 +9,42 @@ enum GoingTonightFailure {
   permissionDenied,
   permissionDeniedForever,
   locationUnavailable,
-  notNearVenue,
+
+  /// The check-in request failed (e.g. not near any club); see
+  /// [GoingTonightState.errorMessage].
+  checkInFailed,
 }
 
 class GoingTonightState extends Equatable {
   final GoingTonightStatus status;
-
   final GoingTonightFailure? failure;
 
-  /// When the badge stops being valid (the next 5:00 AM).
+  /// The server's reason when [failure] is [GoingTonightFailure.checkInFailed].
+  final String? errorMessage;
+
+  /// The club the server checked the user in at.
+  final String? clubId;
+  final String? clubName;
+
+  /// When the badge stops being valid.
   final DateTime? validUntil;
 
   const GoingTonightState({
     this.status = GoingTonightStatus.verifying,
     this.failure,
+    this.errorMessage,
+    this.clubId,
+    this.clubName,
     this.validUntil,
   });
 
   @override
-  List<Object?> get props => [status, failure, validUntil];
+  List<Object?> get props => [
+    status,
+    failure,
+    errorMessage,
+    clubId,
+    clubName,
+    validUntil,
+  ];
 }

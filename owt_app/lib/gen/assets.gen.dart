@@ -213,6 +213,14 @@ class $AssetsImagesGen {
   /// File path: assets/images/owt_logo.svg
   String get owtLogoSvg => 'assets/images/owt_logo.svg';
 
+  /// File path: assets/images/pending_avatar_1.png
+  AssetGenImage get pendingAvatar1 =>
+      const AssetGenImage('assets/images/pending_avatar_1.png');
+
+  /// File path: assets/images/pending_avatar_2.png
+  AssetGenImage get pendingAvatar2 =>
+      const AssetGenImage('assets/images/pending_avatar_2.png');
+
   /// File path: assets/images/phone_illustration.gif
   AssetGenImage get phoneIllustration =>
       const AssetGenImage('assets/images/phone_illustration.gif');
@@ -253,6 +261,8 @@ class $AssetsImagesGen {
     navAvatar,
     owtLogoPng,
     owtLogoSvg,
+    pendingAvatar1,
+    pendingAvatar2,
     phoneIllustration,
     profileAvatar,
     profilePhoto,

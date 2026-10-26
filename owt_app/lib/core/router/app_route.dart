@@ -11,11 +11,17 @@ enum AppRoute {
   addPhotos('/add-photos'),
   dashboard('/dashboard'),
   likes('/likes'),
+  userDetail('/user-detail'),
   search('/search'),
   profile('/profile'),
+  friends('/friends'),
+  friendProfile('/friends/profile'),
   match('/match'),
   settings('/settings'),
-  notifications('/notifications');
+  about('/settings/about'),
+  notifications('/notifications'),
+  messages('/messages'),
+  chat('/chat');
 
   const AppRoute(this.path);
 

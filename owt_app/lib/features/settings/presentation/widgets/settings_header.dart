@@ -6,11 +6,20 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../gen/assets.gen.dart';
 
-/// Back chevron + centered "Setting" title + trailing gear icon.
+/// Back chevron + centered title + trailing gear icon. Defaults to the
+/// "Setting" title; sub-screens (e.g. About App) pass their own [title] and
+/// hide the gear.
 class SettingsHeader extends StatelessWidget {
-  const SettingsHeader({super.key, required this.onBack});
+  const SettingsHeader({
+    super.key,
+    required this.onBack,
+    this.title = AppStrings.settingsTitle,
+    this.showGear = true,
+  });
 
   final VoidCallback onBack;
+  final String title;
+  final bool showGear;
 
   @override
   Widget build(BuildContext context) {
@@ -31,17 +40,21 @@ class SettingsHeader extends StatelessWidget {
           Expanded(
             child: Center(
               child: Text(
-                AppStrings.settingsTitle,
+                title,
                 style: AppTextStyles.settingsTitle.copyWith(color: textColor),
               ),
             ),
           ),
-          SvgPicture.asset(
-            Assets.icons.settingsGear,
-            width: 24,
-            height: 24,
-            colorFilter: ColorFilter.mode(textColor, BlendMode.srcIn),
-          ),
+          if (showGear)
+            SvgPicture.asset(
+              Assets.icons.settingsGear,
+              width: 24,
+              height: 24,
+              colorFilter: ColorFilter.mode(textColor, BlendMode.srcIn),
+            )
+          else
+            // Keeps the title centered against the back chevron.
+            const SizedBox(width: 24),
         ],
       ),
     );

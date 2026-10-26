@@ -75,7 +75,11 @@ class _TodoViewState extends State<TodoView> {
                   case TodoStatus.loading:
                     return const Center(child: CircularProgressIndicator());
                   case TodoStatus.failure:
-                    return Center(child: Text(state.errorMessage ?? AppStrings.genericError));
+                    return Center(
+                      child: Text(
+                        state.errorMessage ?? AppStrings.genericError,
+                      ),
+                    );
                   case TodoStatus.success:
                     if (state.todos.isEmpty) {
                       return const Center(child: Text(AppStrings.noTodosYet));

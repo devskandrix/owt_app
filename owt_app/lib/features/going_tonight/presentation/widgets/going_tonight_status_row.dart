@@ -23,7 +23,9 @@ class GoingTonightStatusRow extends StatelessWidget {
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 200),
           child: SvgPicture.asset(
-            done ? Assets.icons.statusCheckDone : Assets.icons.statusCheckPending,
+            done
+                ? Assets.icons.statusCheckDone
+                : Assets.icons.statusCheckPending,
             key: ValueKey(done),
             width: 24,
             height: 24,

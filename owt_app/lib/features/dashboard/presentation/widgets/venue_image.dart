@@ -21,8 +21,7 @@ class VenueImage extends StatelessWidget {
     return Image.network(
       url,
       fit: fit,
-      errorBuilder: (context, error, stackTrace) =>
-          venue.image.image(fit: fit),
+      errorBuilder: (context, error, stackTrace) => venue.image.image(fit: fit),
       loadingBuilder: (context, child, progress) =>
           progress == null ? child : venue.image.image(fit: fit),
     );

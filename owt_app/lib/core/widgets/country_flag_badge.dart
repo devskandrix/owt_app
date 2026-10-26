@@ -20,8 +20,12 @@ class CountryFlagBadge extends StatelessWidget {
         child: Image.network(
           country.flagImageUrl,
           fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) =>
-              Center(child: Text(country.flagEmoji, style: TextStyle(fontSize: size * 0.7))),
+          errorBuilder: (context, error, stackTrace) => Center(
+            child: Text(
+              country.flagEmoji,
+              style: TextStyle(fontSize: size * 0.7),
+            ),
+          ),
         ),
       ),
     );

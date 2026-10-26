@@ -20,6 +20,13 @@ class Club extends Equatable {
   final int? goingTonightNow;
   final int? viewCount;
 
+  /// Matches at this club; only sent by `GET /clubs/search`.
+  final int? matchCount;
+
+  /// Whether the current user holds the Going Tonight badge here — decides
+  /// whether opening the club goes straight to its swipe queue.
+  final bool isUserVerified;
+
   const Club({
     required this.id,
     required this.name,
@@ -35,6 +42,8 @@ class Club extends Equatable {
     this.viewedAt,
     this.goingTonightNow,
     this.viewCount,
+    this.matchCount,
+    this.isUserVerified = false,
   });
 
   @override
@@ -53,5 +62,7 @@ class Club extends Equatable {
     viewedAt,
     goingTonightNow,
     viewCount,
+    matchCount,
+    isUserVerified,
   ];
 }

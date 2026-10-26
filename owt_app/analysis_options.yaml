@@ -18,6 +18,9 @@ analyzer:
     - windows/**
     - macos/**
     - linux/**
+    # Vendored packages (e.g. the patched zego_zim); not our code, and their
+    # web-only files use APIs newer Dart removed.
+    - third_party/**
 
 linter:
   # The lint rules applied to this project can be customized in the

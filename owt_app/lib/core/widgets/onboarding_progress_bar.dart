@@ -10,7 +10,11 @@ import '../theme/app_gradients.dart';
 /// light mode (an asymmetry confirmed directly against the Figma file); the
 /// unfilled segment is the same translucent white in both themes.
 class OnboardingProgressBar extends StatelessWidget {
-  const OnboardingProgressBar({super.key, required this.currentStep, required this.totalSteps});
+  const OnboardingProgressBar({
+    super.key,
+    required this.currentStep,
+    required this.totalSteps,
+  });
 
   /// 1-indexed: segments before and including this one are filled.
   final int currentStep;
@@ -27,8 +31,12 @@ class OnboardingProgressBar extends StatelessWidget {
             child: Container(
               height: 3,
               decoration: BoxDecoration(
-                color: i < currentStep ? (isDark ? Colors.white : null) : AppColors.progressInactive,
-                gradient: i < currentStep && !isDark ? AppGradients.button : null,
+                color: i < currentStep
+                    ? (isDark ? Colors.white : null)
+                    : AppColors.progressInactive,
+                gradient: i < currentStep && !isDark
+                    ? AppGradients.button
+                    : null,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),

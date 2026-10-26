@@ -12,6 +12,9 @@ class AddPhotosState extends Equatable {
   final Set<String> deletingPhotoIds;
   final String? actionErrorMessage;
 
+  /// The photo being swapped for a new one, shown with a spinner.
+  final String? replacingPhotoId;
+
   const AddPhotosState({
     this.loadStatus = PhotosLoadStatus.loading,
     this.loadErrorMessage,
@@ -19,7 +22,13 @@ class AddPhotosState extends Equatable {
     this.isUploading = false,
     this.deletingPhotoIds = const {},
     this.actionErrorMessage,
+    this.replacingPhotoId,
   });
+
+  /// Photos that will remain once in-flight deletes finish.
+  int get keptPhotoCount => photos.length - deletingPhotoIds.length;
+
+  bool get isBusy => isUploading || replacingPhotoId != null;
 
   AddPhotosState copyWith({
     PhotosLoadStatus? loadStatus,
@@ -28,6 +37,8 @@ class AddPhotosState extends Equatable {
     bool? isUploading,
     Set<String>? deletingPhotoIds,
     String? actionErrorMessage,
+    String? replacingPhotoId,
+    bool clearReplacing = false,
   }) {
     return AddPhotosState(
       loadStatus: loadStatus ?? this.loadStatus,
@@ -36,6 +47,9 @@ class AddPhotosState extends Equatable {
       isUploading: isUploading ?? this.isUploading,
       deletingPhotoIds: deletingPhotoIds ?? this.deletingPhotoIds,
       actionErrorMessage: actionErrorMessage,
+      replacingPhotoId: clearReplacing
+          ? null
+          : replacingPhotoId ?? this.replacingPhotoId,
     );
   }
 
@@ -47,5 +61,6 @@ class AddPhotosState extends Equatable {
     isUploading,
     deletingPhotoIds,
     actionErrorMessage,
+    replacingPhotoId,
   ];
 }

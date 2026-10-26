@@ -1,3 +1,5 @@
+import '../../../../core/network/media_url.dart';
+
 import 'package:json_annotation/json_annotation.dart';
 
 import '../../domain/entities/photo.dart';
@@ -23,7 +25,7 @@ class PhotoModel {
 
   Photo toEntity() => Photo(
     id: id,
-    imageUrl: imageUrl,
+    imageUrl: resolveMediaUrl(imageUrl),
     displayOrder: displayOrder,
     isPrimary: isPrimary,
   );

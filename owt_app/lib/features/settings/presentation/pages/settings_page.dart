@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/error/failures.dart';
+import '../../../../core/router/app_route.dart';
+import '../../../../core/services/session_service.dart';
 import '../../../../core/strings/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/app_switch.dart';
+import '../../../../core/widgets/top_notice.dart';
 import '../cubit/settings_cubit.dart';
 import '../cubit/settings_state.dart';
+import '../widgets/log_out_dialog.dart';
 import '../widgets/settings_header.dart';
 import '../widgets/settings_row.dart';
 
@@ -30,6 +36,55 @@ class SettingsPage extends StatelessWidget {
 
 class _SettingsView extends StatelessWidget {
   const _SettingsView();
+
+  Future<void> _confirmLogOut(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => const LogOutDialog(),
+    );
+    if (confirmed == true) await SessionService.logOut();
+  }
+
+  /// Confirms, then deactivates with a blocking spinner. Success signs out
+  /// (back to the login screen); failure shows the error and stays here.
+  Future<void> _confirmDeactivate(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => const LogOutDialog(
+        title: AppStrings.deactivateConfirmTitle,
+        message: AppStrings.deactivateConfirmMessage,
+        confirmLabel: AppStrings.deactivateConfirmLabel,
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    final navigator = Navigator.of(context, rootNavigator: true);
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      useRootNavigator: true,
+      builder: (_) => const PopScope(
+        canPop: false,
+        child: Center(child: CircularProgressIndicator()),
+      ),
+    );
+    try {
+      await SessionService.deactivateAccount();
+    } on Failure catch (f) {
+      navigator.pop();
+      if (context.mounted) TopNotice.showError(context, f.message);
+      return;
+    } catch (_) {
+      navigator.pop();
+      if (context.mounted) {
+        TopNotice.showError(context, AppStrings.somethingWentWrong);
+      }
+      return;
+    }
+    // Close the spinner before signing out navigates to the login screen.
+    navigator.pop();
+    await SessionService.signOut();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,17 +128,17 @@ class _SettingsView extends StatelessWidget {
                       ),
                       SettingsRow(
                         label: AppStrings.settingsAboutApp,
-                        onTap: () {},
+                        onTap: () => context.pushNamed(AppRoute.about.name),
                       ),
                       SettingsRow(
                         label: AppStrings.settingsDeactivateAccount,
-                        onTap: () {},
+                        onTap: () => _confirmDeactivate(context),
                       ),
                       SettingsRow(
                         label: AppStrings.settingsLogOut,
                         labelStyle: AppTextStyles.settingsLogOut,
                         showDivider: false,
-                        onTap: () {},
+                        onTap: () => _confirmLogOut(context),
                       ),
                     ],
                   );

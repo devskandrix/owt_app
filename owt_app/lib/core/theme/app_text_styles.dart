@@ -306,6 +306,39 @@ abstract final class AppTextStyles {
     fontWeight: FontWeight.w400,
   );
 
+  /// Profile stat number ("23" above "Friends"). Sizes estimated from the
+  /// Figma layer heights. Apply `context.appColors.textPrimary` at the
+  /// call site.
+  static const TextStyle profileStatValue = TextStyle(
+    fontFamily: 'Outfit',
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+  );
+
+  /// Profile stat label ("Friends").
+  static const TextStyle profileStatLabel = TextStyle(
+    fontFamily: 'Outfit',
+    fontSize: 12,
+    fontWeight: FontWeight.w300,
+    color: Color(0xFF98A1B2),
+  );
+
+  /// "About Me" / "Your Photos" section title on the Profile screen.
+  /// Apply `context.appColors.textPrimary` at the call site.
+  static const TextStyle profileSectionTitle = TextStyle(
+    fontFamily: 'Outfit',
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+  );
+
+  /// Purple "Edit" / "Edit Photos" link on the Profile screen.
+  static const TextStyle profileEditLink = TextStyle(
+    fontFamily: 'Outfit',
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+    color: AppColors.toggleOn,
+  );
+
   /// Profile bio paragraph. Page-level content; apply
   /// `context.appColors.textPrimary` at the call site.
   static const TextStyle profileBio = TextStyle(
@@ -443,8 +476,6 @@ abstract final class AppTextStyles {
     color: Colors.white,
   );
 
-
-
   /// Light body copy in the sheet and dialogs.
   static const TextStyle goingTonightBody = TextStyle(
     fontFamily: 'Outfit',
@@ -462,9 +493,6 @@ abstract final class AppTextStyles {
     height: 1.5,
     color: Color(0xFFD0D5DD),
   );
-
-
-
 
   /// "Maybe Later" / "Try Again" text button. Painted through [AppGradients.brand].
   static const TextStyle goingTonightSecondaryAction = TextStyle(
@@ -565,5 +593,109 @@ abstract final class AppTextStyles {
     fontSize: 14,
     fontWeight: FontWeight.w700,
     color: Colors.white,
+  );
+
+  // ---------------------------------------------------------------------
+  // Messages + Chat screens. Apply `context.appColors.textPrimary` at the
+  // call site where no color is set.
+  // ---------------------------------------------------------------------
+
+  /// "Message" section heading on the Messages screen.
+  static const TextStyle messagesSection = TextStyle(
+    fontFamily: 'Outfit',
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    height: 1.2,
+  );
+
+  /// Person's name in a conversation row.
+  static const TextStyle conversationName = TextStyle(
+    fontFamily: 'Outfit',
+    fontSize: 17,
+    fontWeight: FontWeight.w400,
+    height: 1.2,
+  );
+
+  /// Second line of a conversation row ("4 New Message • 4h").
+  static const TextStyle conversationPreview = TextStyle(
+    fontFamily: 'Outfit',
+    fontSize: 14,
+    fontWeight: FontWeight.w300,
+    height: 1.2,
+  );
+
+  /// Person's name in the chat header.
+  static const TextStyle chatHeaderName = TextStyle(
+    fontFamily: 'Outfit',
+    fontSize: 18,
+    fontWeight: FontWeight.w400,
+    height: 1.2,
+  );
+
+  /// Text inside a chat bubble and the chat input.
+  static const TextStyle chatBubble = TextStyle(
+    fontFamily: 'Outfit',
+    fontSize: 15,
+    fontWeight: FontWeight.w400,
+    height: 1.3,
+  );
+
+  /// "09:25 AM" under a group of chat bubbles.
+  static const TextStyle chatTime = TextStyle(
+    fontFamily: 'Outfit',
+    fontSize: 12,
+    fontWeight: FontWeight.w300,
+    height: 1.2,
+    color: Color(0xFF98A1B2),
+  );
+
+  // ---------------------------------------------------------------------
+  // About App screen. Apply theme colors at the call site.
+  // ---------------------------------------------------------------------
+
+  /// "Version 1.0.0 (1)" under the logo.
+  static const TextStyle aboutVersion = TextStyle(
+    fontFamily: 'Outfit',
+    fontSize: 12,
+    fontWeight: FontWeight.w300,
+  );
+
+  /// Intro paragraph and other long-form body copy.
+  static const TextStyle aboutBody = TextStyle(
+    fontFamily: 'Outfit',
+    fontSize: 14,
+    fontWeight: FontWeight.w300,
+    height: 1.5,
+  );
+
+  /// Title inside a step row or feature card.
+  static const TextStyle aboutItemTitle = TextStyle(
+    fontFamily: 'Outfit',
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+  );
+
+  /// Description under a step row or feature card title.
+  static const TextStyle aboutItemDesc = TextStyle(
+    fontFamily: 'Outfit',
+    fontSize: 12,
+    fontWeight: FontWeight.w300,
+    height: 1.4,
+  );
+
+  /// Step number inside the gradient circle.
+  static const TextStyle aboutStepNumber = TextStyle(
+    fontFamily: 'Outfit',
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+    color: Colors.white,
+  );
+
+  /// Footer lines at the bottom of the screen.
+  static const TextStyle aboutFooter = TextStyle(
+    fontFamily: 'Outfit',
+    fontSize: 11,
+    fontWeight: FontWeight.w300,
+    color: Color(0xFF98A1B2),
   );
 }

@@ -17,7 +17,10 @@ class VerifyOtpCubit extends Cubit<VerifyOtpState> {
       emit(state.copyWith(status: VerifyOtpStatus.success));
     } on Failure catch (f) {
       emit(
-        state.copyWith(status: VerifyOtpStatus.failure, errorMessage: f.message),
+        state.copyWith(
+          status: VerifyOtpStatus.failure,
+          errorMessage: f.message,
+        ),
       );
     } catch (_) {
       emit(

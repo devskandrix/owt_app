@@ -47,20 +47,25 @@ class AddPhotosCubit extends Cubit<AddPhotosState> {
     }
   }
 
-  Future<void> upload(Uint8List bytes, String fileName) async {
-    if (state.isUploading || state.photos.length >= maxPhotos) return;
-
+  /// Emits an error and returns false if the file can't be uploaded.
+  bool _validateFile(Uint8List bytes, String fileName) {
     final extension = fileName.split('.').last.toLowerCase();
     if (!_allowedExtensions.contains(extension)) {
       emit(
         state.copyWith(actionErrorMessage: AppStrings.unsupportedPhotoFormat),
       );
-      return;
+      return false;
     }
     if (bytes.lengthInBytes > maxUploadBytes) {
       emit(state.copyWith(actionErrorMessage: AppStrings.photoTooLarge));
-      return;
+      return false;
     }
+    return true;
+  }
+
+  Future<void> upload(Uint8List bytes, String fileName) async {
+    if (state.isBusy || state.photos.length >= maxPhotos) return;
+    if (!_validateFile(bytes, fileName)) return;
 
     emit(state.copyWith(isUploading: true));
     try {
@@ -82,8 +87,18 @@ class AddPhotosCubit extends Cubit<AddPhotosState> {
     }
   }
 
-  Future<void> remove(String photoId) async {
-    if (state.deletingPhotoIds.contains(photoId)) return;
+  /// Deletes a photo (`DELETE /users/me/photos/:photoId`). With
+  /// [keepMinimum] (editing from Profile), refuses to go below
+  /// [minRequiredPhotos].
+  Future<void> remove(String photoId, {bool keepMinimum = false}) async {
+    if (state.deletingPhotoIds.contains(photoId) ||
+        state.replacingPhotoId == photoId) {
+      return;
+    }
+    if (keepMinimum && state.keptPhotoCount <= minRequiredPhotos) {
+      emit(state.copyWith(actionErrorMessage: AppStrings.minPhotosReached));
+      return;
+    }
 
     emit(
       state.copyWith(deletingPhotoIds: {...state.deletingPhotoIds, photoId}),
@@ -113,6 +128,50 @@ class AddPhotosCubit extends Cubit<AddPhotosState> {
           deletingPhotoIds: state.deletingPhotoIds
               .where((id) => id != photoId)
               .toSet(),
+          actionErrorMessage: AppStrings.somethingWentWrong,
+        ),
+      );
+    }
+  }
+
+  /// Swaps [photoId] for a new image: uploads the new one, then deletes
+  /// the old one, so the count never drops below the minimum. At the
+  /// [maxPhotos] cap it deletes first to make room. The new photo goes to
+  /// the end of the list.
+  Future<void> replace(String photoId, Uint8List bytes, String fileName) async {
+    if (state.isBusy || state.deletingPhotoIds.contains(photoId)) return;
+    if (!_validateFile(bytes, fileName)) return;
+
+    emit(state.copyWith(replacingPhotoId: photoId));
+    final deleteFirst = state.photos.length >= maxPhotos;
+    try {
+      if (deleteFirst) {
+        await _deletePhoto(photoId);
+        emit(
+          state.copyWith(
+            photos: state.photos.where((p) => p.id != photoId).toList(),
+          ),
+        );
+      }
+      final photo = await _uploadPhoto(
+        UploadPhotoParams(bytes: bytes, fileName: fileName),
+      );
+      emit(state.copyWith(photos: [...state.photos, photo]));
+      if (!deleteFirst) {
+        await _deletePhoto(photoId);
+        emit(
+          state.copyWith(
+            photos: state.photos.where((p) => p.id != photoId).toList(),
+          ),
+        );
+      }
+      emit(state.copyWith(clearReplacing: true));
+    } on Failure catch (f) {
+      emit(state.copyWith(clearReplacing: true, actionErrorMessage: f.message));
+    } catch (_) {
+      emit(
+        state.copyWith(
+          clearReplacing: true,
           actionErrorMessage: AppStrings.somethingWentWrong,
         ),
       );

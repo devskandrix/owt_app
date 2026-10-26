@@ -23,4 +23,6 @@ ClubModel _$ClubModelFromJson(Map<String, dynamic> json) => ClubModel(
       : DateTime.parse(json['viewedAt'] as String),
   goingTonightNow: (json['goingTonightNow'] as num?)?.toInt(),
   viewCount: (json['viewCount'] as num?)?.toInt(),
+  matchCount: (json['matchCount'] as num?)?.toInt(),
+  isUserVerified: json['isUserVerified'] as bool? ?? false,
 );

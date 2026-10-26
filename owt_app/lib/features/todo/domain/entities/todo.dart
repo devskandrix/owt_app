@@ -5,11 +5,7 @@ class Todo extends Equatable {
   final String title;
   final bool isDone;
 
-  const Todo({
-    required this.id,
-    required this.title,
-    this.isDone = false,
-  });
+  const Todo({required this.id, required this.title, this.isDone = false});
 
   Todo copyWith({String? id, String? title, bool? isDone}) {
     return Todo(

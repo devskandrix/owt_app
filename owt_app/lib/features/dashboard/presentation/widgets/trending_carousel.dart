@@ -77,7 +77,10 @@ class _TrendingCarouselViewState extends State<_TrendingCarouselView> {
                 child: Transform.scale(
                   scale: scale,
                   child: GestureDetector(
-                    onTap: () => context.pushNamed(AppRoute.match.name),
+                    onTap: () => context.pushNamed(
+                      AppRoute.match.name,
+                      extra: venues[index].club,
+                    ),
                     child: TrendingCard(venue: venues[index]),
                   ),
                 ),

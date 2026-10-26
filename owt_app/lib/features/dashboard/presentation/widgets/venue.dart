@@ -1,5 +1,6 @@
 import '../../../../core/strings/app_strings.dart';
 import '../../../../gen/assets.gen.dart';
+import '../../../match/presentation/models/match_club.dart';
 import '../../domain/entities/club.dart';
 
 /// A club/event card's content, shared by the trending carousel and the
@@ -12,7 +13,12 @@ class Venue {
     required this.liveCount,
     required this.goingCount,
     this.networkImageUrl,
+    this.club,
   });
+
+  /// The club behind this card, when built from API data — opens its
+  /// match-making screen. Null for the static demo venues below.
+  final MatchClub? club;
 
   final String name;
   final String location;
@@ -41,6 +47,15 @@ class Venue {
       liveCount: _formatCompact(club.viewCount ?? 0),
       goingCount: _formatWithCommas(club.goingTonightNow ?? 0),
       networkImageUrl: club.coverImage,
+      club: MatchClub(
+        id: club.id,
+        name: club.name,
+        city: club.city,
+        coverImage: club.coverImage,
+        isUserVerified: club.isUserVerified,
+        goingTonightNow: club.goingTonightNow ?? 0,
+        viewCount: club.viewCount ?? 0,
+      ),
     );
   }
 

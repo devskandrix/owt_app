@@ -31,7 +31,11 @@ class GenderSelector extends StatelessWidget {
         for (final option in _options) ...[
           if (option != _options.first) const SizedBox(width: 6),
           Expanded(
-            child: InkWell(
+            // Plain tap target (no Material ripple): the filled dot is the
+            // selection feedback, and an InkWell's splash spilled over the
+            // surrounding title and fields.
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: () => onChanged(option.value),
               child: Row(
                 mainAxisSize: MainAxisSize.min,

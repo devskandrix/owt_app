@@ -20,7 +20,9 @@ class TodoLocalDataSourceImpl implements TodoLocalDataSource {
   @override
   Future<List<TodoModel>> getTodos() async {
     return _storage
-        .map((raw) => TodoModel.fromJson(jsonDecode(raw) as Map<String, dynamic>))
+        .map(
+          (raw) => TodoModel.fromJson(jsonDecode(raw) as Map<String, dynamic>),
+        )
         .toList();
   }
 

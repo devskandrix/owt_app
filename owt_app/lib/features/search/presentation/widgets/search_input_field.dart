@@ -9,9 +9,10 @@ import '../../../../gen/assets.gen.dart';
 /// layout as the dashboard's tappable search bar, but with a live
 /// [TextField] and the filter icon inset at the trailing edge.
 class SearchInputField extends StatelessWidget {
-  const SearchInputField({super.key, required this.controller});
+  const SearchInputField({super.key, required this.controller, this.onChanged});
 
   final TextEditingController controller;
+  final ValueChanged<String>? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -32,10 +33,15 @@ class SearchInputField extends StatelessWidget {
           Expanded(
             child: TextField(
               controller: controller,
+              onChanged: onChanged,
               autofocus: true,
+              textInputAction: TextInputAction.search,
               style: AppTextStyles.searchQueryText,
               cursorColor: colors.textPrimary,
-              decoration: const InputDecoration(border: InputBorder.none, isDense: true),
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                isDense: true,
+              ),
             ),
           ),
           SvgPicture.asset(

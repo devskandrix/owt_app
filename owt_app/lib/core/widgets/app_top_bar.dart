@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:go_router/go_router.dart';
 
-import '../router/app_route.dart';
-import '../theme/app_colors.dart';
+import '../../features/notifications/presentation/widgets/notification_bell.dart';
 import '../../gen/assets.gen.dart';
 
 /// Centered "OWT" wordmark with a notification bell on the trailing edge.
 /// Shared across screens that use the dashboard-style app shell (Home,
 /// Search, ...).
 class AppTopBar extends StatelessWidget {
-  const AppTopBar({super.key});
+  const AppTopBar({super.key, this.refreshNotificationCount = true});
+
+  /// Whether the bell fetches the unread count
+  /// (`GET /notifications/unread-count`) when this bar appears.
+  final bool refreshNotificationCount;
 
   @override
   Widget build(BuildContext context) {
@@ -27,18 +28,7 @@ class AppTopBar extends StatelessWidget {
               ),
             ),
           ),
-          GestureDetector(
-            onTap: () => context.pushNamed(AppRoute.notifications.name),
-            child: SvgPicture.asset(
-              Assets.icons.bell,
-              width: 24,
-              height: 24,
-              colorFilter: ColorFilter.mode(
-                context.appColors.textPrimary,
-                BlendMode.srcIn,
-              ),
-            ),
-          ),
+          NotificationBell(refreshCount: refreshNotificationCount),
         ],
       ),
     );

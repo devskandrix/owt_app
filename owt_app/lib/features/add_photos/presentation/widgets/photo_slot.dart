@@ -4,7 +4,8 @@ import '../../../../core/theme/app_colors.dart';
 
 /// One slot in the 3x2 photo grid on the "Add your photos" screen: an
 /// empty slot with a "+" affordance, an uploading placeholder, or a filled
-/// slot (with a remove "x", dimmed with a spinner while it's being deleted).
+/// slot (with a remove "x", dimmed with a spinner while it's being deleted
+/// or replaced).
 class PhotoSlot extends StatelessWidget {
   const PhotoSlot({
     super.key,
@@ -13,6 +14,7 @@ class PhotoSlot extends StatelessWidget {
     this.isDeleting = false,
     this.onTap,
     this.onRemove,
+    this.onEdit,
   });
 
   final String? imageUrl;
@@ -20,6 +22,9 @@ class PhotoSlot extends StatelessWidget {
   final bool isDeleting;
   final VoidCallback? onTap;
   final VoidCallback? onRemove;
+
+  /// Tap on a filled slot (editing from Profile: replace / delete).
+  final VoidCallback? onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +41,9 @@ class PhotoSlot extends StatelessWidget {
     return AspectRatio(
       aspectRatio: 105 / 128,
       child: GestureDetector(
-        onTap: filled || isUploading ? null : onTap,
+        onTap: filled
+            ? (isDeleting ? null : onEdit)
+            : (isUploading ? null : onTap),
         child: Container(
           decoration: BoxDecoration(
             color: colors.background,
@@ -62,13 +69,14 @@ class PhotoSlot extends StatelessWidget {
                             ),
                           );
                         },
-                        errorBuilder: (context, error, stackTrace) => ColoredBox(
-                          color: colors.inputBorder,
-                          child: Icon(
-                            Icons.error_outline,
-                            color: colors.textMuted,
-                          ),
-                        ),
+                        errorBuilder: (context, error, stackTrace) =>
+                            ColoredBox(
+                              color: colors.inputBorder,
+                              child: Icon(
+                                Icons.error_outline,
+                                color: colors.textMuted,
+                              ),
+                            ),
                       ),
                     ),
                     if (isDeleting)

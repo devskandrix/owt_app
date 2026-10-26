@@ -61,11 +61,15 @@ class _OtpCodeRowState extends State<OtpCodeRow> {
               keyboardType: TextInputType.number,
               maxLength: 1,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              style: AppTextStyles.otpDigit.copyWith(color: colors.textOtpFilled),
+              style: AppTextStyles.otpDigit.copyWith(
+                color: colors.textOtpFilled,
+              ),
               decoration: InputDecoration(
                 counterText: '',
                 hintText: AppStrings.otpEmptyPlaceholder,
-                hintStyle: AppTextStyles.otpDigit.copyWith(color: AppColors.otpEmptyText),
+                hintStyle: AppTextStyles.otpDigit.copyWith(
+                  color: AppColors.otpEmptyText,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide(color: colors.otpBorder),

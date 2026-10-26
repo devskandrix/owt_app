@@ -12,4 +12,5 @@ ApiListEnvelopeModel _$ApiListEnvelopeModelFromJson(
   success: json['success'] as bool,
   data: json['data'] as List<dynamic>?,
   message: json['message'] as String?,
+  meta: json['meta'] as Map<String, dynamic>?,
 );

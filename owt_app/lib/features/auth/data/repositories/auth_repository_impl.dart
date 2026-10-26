@@ -193,6 +193,25 @@ class AuthRepositoryImpl implements AuthRepository {
     );
   }
 
+  @override
+  Future<void> logout() async {
+    final refreshToken = await TokenStorage.readRefreshToken();
+    if (refreshToken == null) return;
+    final accessToken = await TokenStorage.readAccessToken();
+    const fallback = 'Failed to log out.';
+    try {
+      final envelope = await remoteDataSource.logout(
+        accessToken == null ? '' : 'Bearer $accessToken',
+        {'refreshToken': refreshToken},
+      );
+      if (!envelope.success) {
+        throw ServerFailure(envelope.message ?? fallback);
+      }
+    } on DioException catch (e) {
+      throw _mapDioException(e, fallbackMessage: fallback);
+    }
+  }
+
   Failure _mapDioException(DioException e, {required String fallbackMessage}) {
     switch (e.type) {
       case DioExceptionType.connectionTimeout:

@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'core/di/injection_container.dart';
-import 'core/router/app_route.dart';
 import 'core/router/app_router.dart';
-import 'core/storage/token_storage.dart';
+import 'core/services/push_notification_service.dart';
+import 'core/services/session_service.dart';
+import 'core/services/zego_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
 import 'firebase_options.dart';
@@ -21,18 +22,13 @@ Future<void> main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+    PushNotificationService.registerBackgroundHandler();
   }
-  await initDependencies(onSessionExpired: _signOut);
+  await initDependencies(onSessionExpired: SessionService.signOut);
+  await ZegoService.init();
   runApp(const MyApp());
-}
-
-/// Wired into the shared [Dio] client (see [DioClient]) as its
-/// `onSessionExpired` callback: fires when a 401 couldn't be resolved by
-/// refreshing the session, so the stored tokens are stale/invalid — clear
-/// them and send the user back to sign in.
-Future<void> _signOut() async {
-  await TokenStorage.clear();
-  AppRouter.router.goNamed(AppRoute.splash.name);
+  // Permission is asked later, from Home, once the user is signed in.
+  await PushNotificationService.init();
 }
 
 class MyApp extends StatelessWidget {

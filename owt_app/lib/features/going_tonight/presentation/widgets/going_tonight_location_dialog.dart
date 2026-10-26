@@ -11,8 +11,18 @@ import 'going_tonight_icon.dart';
 /// that's where the actual while-using / once choice is made — or `false`.
 /// Its buttons deliberately don't repeat the OS prompt's wording, so the
 /// two don't read as the same dialog twice.
+///
+/// Defaults to the Going Tonight copy; Home passes its own [message] and
+/// [confirmLabel] for nearby clubs.
 class GoingTonightLocationDialog extends StatelessWidget {
-  const GoingTonightLocationDialog({super.key});
+  const GoingTonightLocationDialog({
+    super.key,
+    this.message = AppStrings.goingTonightLocationBody,
+    this.confirmLabel = AppStrings.goingTonightVerifyMyLocation,
+  });
+
+  final String message;
+  final String confirmLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -30,14 +40,14 @@ class GoingTonightLocationDialog extends StatelessWidget {
             style: AppTextStyles.goingTonightTitle,
           ),
           const SizedBox(height: 15),
-          const Text(
-            AppStrings.goingTonightLocationBody,
+          Text(
+            message,
             textAlign: TextAlign.center,
             style: AppTextStyles.goingTonightBody,
           ),
           const SizedBox(height: 15),
           _PillButton(
-            label: AppStrings.goingTonightVerifyMyLocation,
+            label: confirmLabel,
             decoration: const BoxDecoration(gradient: AppGradients.button),
             onTap: () => close(true),
           ),
