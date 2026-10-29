@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:zego_uikit/zego_uikit.dart';
 import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
 import 'package:zego_uikit_signaling_plugin/zego_uikit_signaling_plugin.dart';
-import 'package:zego_zimkit/zego_zimkit.dart';
 
 import '../../features/chat/domain/entities/zego_token.dart';
 import '../../features/chat/domain/usecases/get_zego_token.dart';
@@ -12,11 +11,12 @@ import '../network/env.dart';
 import '../router/app_router.dart';
 import '../usecase/usecase.dart';
 
-/// ZEGOCLOUD chat (ZIMKit) and voice / video calls (Call Kit).
+/// ZEGOCLOUD voice / video calls (Call Kit). Chat itself runs on our own
+/// backend (see `ChatSocketService`); ZEGOCLOUD is only used for calls.
 ///
 /// - [init] once at startup.
-/// - [login] once signed in (from Home): connects chat as the user's own
-///   id / name / photo and starts listening for incoming calls.
+/// - [login] once signed in (from Home): signs in as the user's own
+///   id / name and starts listening for incoming calls.
 /// - [logout] on sign-out.
 ///
 /// Everything is a no-op when `ZEGO_APP_ID` isn't in `.env` (see
@@ -35,7 +35,7 @@ abstract final class ZegoService {
   /// The ZEGOCLOUD user id for one of our backend user ids. ZEGOCLOUD
   /// allows at most 32 characters, and our ids are 36-character UUIDs, so
   /// the hyphens are dropped (leaving exactly 32). Use this everywhere an
-  /// id goes to ZEGOCLOUD: sign-in, chats and calls.
+  /// id goes to ZEGOCLOUD: sign-in and calls.
   static String idFor(String backendUserId) =>
       backendUserId.replaceAll('-', '');
 
@@ -60,7 +60,7 @@ abstract final class ZegoService {
   static Future<void>? _renewing;
 
   /// Token mode: gets a fresh token and hands it to ZEGOCLOUD before the
-  /// current one expires: for chat and call invitations, and for the call
+  /// current one expires: for call invitations, and for the call
   /// in progress, if any. If it fails, the connection drops when the token
   /// expires and the next [login] signs in again with a new one.
   static Future<void> _renewToken() =>
@@ -84,13 +84,13 @@ abstract final class ZegoService {
 
   /// Prints a `[ZEGO]` line to the console in debug builds (release builds
   /// stay quiet). ZEGOCLOUD's own SDK logs go to files on the device, so
-  /// these are the readable trail of chat and call events. Filter the
+  /// these are the readable trail of call events. Filter the
   /// console by `[ZEGO]` to see only them.
   static void log(String message) {
     if (kDebugMode) debugPrint('[ZEGO] $message');
   }
 
-  /// Whether chat and calls are ready for the signed-in user.
+  /// Whether calls are ready for the signed-in user.
   static bool get isLoggedIn => _userId != null;
 
   /// Call once from `main()`, before `runApp`.
@@ -98,17 +98,21 @@ abstract final class ZegoService {
     if (!isAvailable || _initialized) return;
     _initialized = true;
     // In token mode the AppSign must not be used at all.
-    await ZIMKit().init(appID: Env.zegoAppId, appSign: _appSign);
+    await ZegoUIKitSignalingPlugin().init(
+      appID: Env.zegoAppId,
+      appSign: _appSign,
+    );
     log(
       'init: appID ${Env.zegoAppId}, '
       '${Env.zegoUseToken ? 'token' : 'AppSign'} mode',
     );
-    ZIMKit().getConnectionStateChangedEventStream().listen((event) {
-      log('connection: ${event.state.name} (${event.action})');
+    ZegoUIKitSignalingPlugin().getConnectionStateChangedEventStream().listen((
+      event,
+    ) {
+      log('connection: ${event.state.name}');
       // If the connection drops for good (e.g. the same account signs in
-      // on another device), stop treating chat as ready, so the next
-      // [login] connects again instead of chat calls failing with "not
-      // logged in".
+      // on another device), stop treating calls as ready, so the next
+      // [login] connects again.
       if (event.state == ZegoSignalingPluginConnectionState.disconnected &&
           _userId != null) {
         _userId = null;
@@ -128,11 +132,11 @@ abstract final class ZegoService {
   }
 
   /// The sign-in in progress, so overlapping callers (Home starting it,
-  /// then Messages or a chat opening before it finishes) wait for the same
+  /// then a chat opening before it finishes) wait for the same
   /// one instead of signing in twice at once.
   static Future<void>? _loggingIn;
 
-  /// Signs into chat and calls as the current user. Safe to call more
+  /// Signs into calls as the current user. Safe to call more
   /// than once; does nothing if already logged in as that user. Check
   /// [isLoggedIn] afterwards to know whether it worked.
   static Future<void> login() =>
@@ -154,14 +158,14 @@ abstract final class ZegoService {
     }
     if (_userId != null) await logout();
 
-    log('login: connecting chat as $zegoId (${profile.fullName})');
+    log('login: signing in as $zegoId (${profile.fullName})');
     try {
       ZegoToken? token;
       if (Env.zegoUseToken) {
         token = await _fetchToken();
         if (token == null) return;
-        // ZIMKit's connectUser can't take a token, so sign in through the
-        // signaling plugin first; ZIMKit then reuses that session.
+        // Sign in to the signaling plugin with the token first; the call
+        // service then reuses that session.
         final result = await ZegoUIKitSignalingPlugin().connectUser(
           id: zegoId,
           name: profile.fullName,
@@ -174,17 +178,7 @@ abstract final class ZegoService {
         log('login: signed in with token');
       }
 
-      // Reports failure as a non-zero code rather than throwing.
-      final code = await ZIMKit().connectUser(
-        id: zegoId,
-        name: profile.fullName,
-        avatarUrl: profile.avatarUrl ?? '',
-      );
-      if (code != 0) {
-        log('login: chat failed, error code $code');
-        return;
-      }
-      log('login: chat connected; starting call service');
+      log('login: starting call service');
       await ZegoUIKitPrebuiltCallInvitationService().init(
         appID: Env.zegoAppId,
         appSign: _appSign,
@@ -222,20 +216,20 @@ abstract final class ZegoService {
         ),
       );
       _userId = zegoId;
-      log('login: done, chat and calls ready');
+      log('login: done, calls ready');
     } catch (e) {
       log('login: failed: $e');
     }
   }
 
-  /// Signs out of chat and stops receiving calls.
+  /// Signs out and stops receiving calls.
   static Future<void> logout() async {
     if (!isAvailable || _userId == null) return;
     log('logout: $_userId');
     _userId = null;
     try {
       await ZegoUIKitPrebuiltCallInvitationService().uninit();
-      await ZIMKit().disconnectUser();
+      await ZegoUIKitSignalingPlugin().disconnectUser();
       log('logout: done');
     } catch (e) {
       log('logout: failed: $e');

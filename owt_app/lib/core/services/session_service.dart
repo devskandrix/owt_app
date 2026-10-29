@@ -10,6 +10,7 @@ import '../router/app_router.dart';
 import '../storage/token_storage.dart';
 import 'auth_service.dart';
 import 'push_notification_service.dart';
+import 'chat_socket_service.dart';
 import 'zego_service.dart';
 
 /// Ends the signed-in session on this device: signs out of Firebase /
@@ -43,6 +44,7 @@ abstract final class SessionService {
       // provider sign-out shouldn't stop the local logout.
       if (!kIsWeb) await AuthService.signOut();
     } catch (_) {}
+    ChatSocketService.disconnect();
     await ZegoService.logout();
     await PushNotificationService.deleteToken();
     await TokenStorage.clear();

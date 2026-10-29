@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// Persists auth tokens in the platform keychain/keystore. Nothing else in
@@ -11,6 +13,13 @@ abstract final class TokenStorage {
   static const _signupEmailKey = 'auth_signup_email';
   static const _fcmTokenKey = 'fcm_token';
 
+  static final _accessTokenChanges = StreamController<String>.broadcast();
+
+  /// Emits the new access token whenever a session is saved: at sign-in
+  /// and each time `POST /auth/refresh` rotates it. The chat socket listens
+  /// so it can reconnect with the fresh token.
+  static Stream<String> get accessTokenChanges => _accessTokenChanges.stream;
+
   /// A logged-in session's tokens (an already-registered user).
   static Future<void> saveSession({
     required String accessToken,
@@ -18,6 +27,7 @@ abstract final class TokenStorage {
   }) async {
     await _storage.write(key: _accessTokenKey, value: accessToken);
     await _storage.write(key: _refreshTokenKey, value: refreshToken);
+    _accessTokenChanges.add(accessToken);
   }
 
   static Future<String?> readAccessToken() =>

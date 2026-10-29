@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -9,6 +11,8 @@ import '../../features/notifications/presentation/cubit/unread_notifications_cub
 import '../../firebase_options.dart';
 import '../di/injection_container.dart';
 import '../router/app_route.dart';
+import '../../features/chat/presentation/models/chat_args.dart';
+import '../network/media_url.dart';
 import '../router/app_router.dart';
 import '../storage/token_storage.dart';
 
@@ -70,7 +74,8 @@ abstract final class PushNotificationService {
           requestSoundPermission: false,
         ),
       ),
-      onDidReceiveNotificationResponse: (_) => _openNotifications(),
+      onDidReceiveNotificationResponse: (response) =>
+          _open(_decodePayload(response.payload)),
     );
     await _local
         .resolvePlatformSpecificImplementation<
@@ -85,12 +90,12 @@ abstract final class PushNotificationService {
     );
 
     FirebaseMessaging.onMessage.listen(_onForegroundMessage);
-    FirebaseMessaging.onMessageOpenedApp.listen((_) => _openNotifications());
+    FirebaseMessaging.onMessageOpenedApp.listen((m) => _open(m.data));
     _messaging.onTokenRefresh.listen(_onToken);
 
     // The app was launched by tapping a notification while it was killed.
     final initial = await _messaging.getInitialMessage();
-    if (initial != null) _openNotifications(coldStart: true);
+    if (initial != null) _open(initial.data, coldStart: true);
   }
 
   /// Asks for permission to show notifications (iOS, and Android 13+),
@@ -157,6 +162,7 @@ abstract final class PushNotificationService {
     if (notification == null) return;
     await _local.show(
       id: message.messageId?.hashCode ?? notification.hashCode,
+      payload: jsonEncode(message.data),
       title: notification.title,
       body: notification.body,
       notificationDetails: NotificationDetails(
@@ -171,15 +177,53 @@ abstract final class PushNotificationService {
     );
   }
 
-  /// Shows the Notification screen if the user is signed in. On a cold
-  /// start it waits for the first frame and lands on Dashboard first, so
-  /// back still leads somewhere.
-  static Future<void> _openNotifications({bool coldStart = false}) async {
+  static Map<String, dynamic> _decodePayload(String? payload) {
+    if (payload == null || payload.isEmpty) return const {};
+    try {
+      final decoded = jsonDecode(payload);
+      return decoded is Map<String, dynamic> ? decoded : const {};
+    } catch (_) {
+      return const {};
+    }
+  }
+
+  /// Opens what a tapped notification is about, if the user is signed in:
+  /// a chat message opens that chat (falling back to the Messages inbox
+  /// if the push lacks its ids); anything else opens the Notification
+  /// screen. On a cold start it waits for the first frame and lands on
+  /// Dashboard first, so back still leads somewhere.
+  static Future<void> _open(
+    Map<String, dynamic> data, {
+    bool coldStart = false,
+  }) async {
     if (!await TokenStorage.hasSession()) return;
     sl<UnreadNotificationsCubit>().refresh();
     if (coldStart) {
       await WidgetsBinding.instance.endOfFrame;
       AppRouter.router.goNamed(AppRoute.dashboard.name);
+    }
+    // `{ type, matchId, senderId, senderName, senderAvatar? }`; the avatar
+    // is left out when the sender has no primary photo.
+    if (data['type'] == 'MESSAGE_RECEIVED') {
+      final matchId = data['matchId']?.toString();
+      final userId = data['senderId']?.toString();
+      final avatar = data['senderAvatar']?.toString();
+      if (matchId != null && userId != null) {
+        AppRouter.router.pushNamed(
+          AppRoute.chat.name,
+          extra: ChatArgs(
+            matchId: matchId,
+            userId: userId,
+            name: data['senderName']?.toString() ?? '',
+            avatarUrl: avatar == null || avatar.isEmpty
+                ? null
+                : resolveMediaUrl(avatar),
+          ),
+        );
+      } else {
+        AppRouter.router.pushNamed(AppRoute.messages.name);
+      }
+      return;
     }
     AppRouter.router.pushNamed(AppRoute.notifications.name);
   }

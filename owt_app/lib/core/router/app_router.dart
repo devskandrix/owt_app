@@ -20,6 +20,7 @@ import '../../features/phone_number/presentation/pages/phone_number_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/search/presentation/pages/search_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
+import '../../features/settings/presentation/pages/web_page.dart';
 import '../../features/about/presentation/pages/about_page.dart';
 import '../../features/splash/presentation/pages/splash_page.dart';
 import '../../features/verification/presentation/pages/verification_page.dart';
@@ -143,6 +144,11 @@ abstract final class AppRouter {
         path: AppRoute.about.path,
         name: AppRoute.about.name,
         builder: (context, state) => const AboutPage(),
+      ),
+      GoRoute(
+        path: AppRoute.webPage.path,
+        name: AppRoute.webPage.name,
+        builder: (context, state) => WebPage(args: state.extra! as WebPageArgs),
       ),
       GoRoute(
         path: AppRoute.messages.path,

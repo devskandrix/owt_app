@@ -1,16 +1,17 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/usecase/usecase.dart';
+import '../entities/like_outcome.dart';
 import '../repositories/matchmaking_repository.dart';
 
-/// Swipe right; resolves to true on a mutual match.
-class LikeProfile implements UseCase<bool, LikeProfileParams> {
+/// Swipe right.
+class LikeProfile implements UseCase<LikeOutcome, LikeProfileParams> {
   final MatchmakingRepository repository;
 
   const LikeProfile(this.repository);
 
   @override
-  Future<bool> call(LikeProfileParams params) =>
+  Future<LikeOutcome> call(LikeProfileParams params) =>
       repository.like(receiverId: params.receiverId, clubId: params.clubId);
 }
 

@@ -1,58 +1,54 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:zego_zimkit/zego_zimkit.dart';
-// ZIMKit's audio player isn't part of its public API. Safe while zego_zimkit
-// is pinned to an exact version (see pubspec.yaml).
-// ignore: implementation_imports
-import 'package:zego_zimkit/src/services/audio/core.dart';
-// ignore: implementation_imports
-import 'package:zego_zimkit/src/services/audio/data.dart';
 
+import '../../../../core/strings/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/top_notice.dart';
+import '../../domain/entities/chat_message.dart';
+import '../utils/chat_audio_player.dart';
+import '../utils/chat_time.dart';
 import 'chat_message_item.dart';
 
 /// A voice message in the design's style: a white play button, a waveform
 /// that fills in as it plays, and the length ("00:16").
 ///
-/// Plays through ZIMKit's audio player, the same one its own voice bubble
-/// uses, so only one voice message plays at a time.
+/// Plays through [ChatAudioPlayer], shared by every voice message, so only
+/// one plays at a time.
 class VoiceMessageBubble extends StatefulWidget {
   const VoiceMessageBubble({super.key, required this.message});
 
-  final ZIMKitMessage message;
+  final ChatMessage message;
 
   @override
   State<VoiceMessageBubble> createState() => _VoiceMessageBubbleState();
 }
 
 class _VoiceMessageBubbleState extends State<VoiceMessageBubble> {
-  ZIMKitAudioInstance get _player => ZIMKitAudioInstance();
+  bool _loading = false;
 
-  int get _id => widget.message.info.messageID;
-
-  ZIMKitMessageAudioContent get _audio => widget.message.audioContent!;
-
-  bool _isPlayingThis(ZIMKitAudioPlayStatus status) =>
-      status.isPlaying && status.id == _id;
+  String get _key => widget.message.key;
 
   @override
   void dispose() {
     // Stop this message if it's still playing when it scrolls away.
-    if (_player.data.playStatusNotifier.value.id == _id) {
-      _player.stopPlay();
-    }
+    ChatAudioPlayer.stopIfPlaying(_key);
     super.dispose();
   }
 
-  void _toggle() {
-    final path = _audio.fileLocalPath;
-    // Still downloading.
-    if (path.isEmpty) return;
-    if (_isPlayingThis(_player.data.playStatusNotifier.value)) {
-      _player.stopPlay();
-    } else {
-      _player.startPlay(_id, path);
+  Future<void> _toggle() async {
+    final message = widget.message;
+    setState(() => _loading = true);
+    try {
+      await ChatAudioPlayer.toggle(
+        _key,
+        localPath: message.localFilePath,
+        url: message.mediaUrl,
+      );
+    } catch (_) {
+      if (mounted) TopNotice.showError(context, AppStrings.chatPlaybackFailed);
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -60,10 +56,11 @@ class _VoiceMessageBubbleState extends State<VoiceMessageBubble> {
   Widget build(BuildContext context) {
     final mine = widget.message.isMine;
     final foreground = mine ? Colors.white : context.appColors.textPrimary;
-    final seconds = _audio.audioDuration;
+    final seconds = widget.message.durationSeconds ?? 0;
     final maxWidth = MediaQuery.sizeOf(context).width * 0.62;
     // Longer messages get a wider bubble, like the design's 16s one.
     final width = (150 + seconds * 5).clamp(150, maxWidth).toDouble();
+    final seed = _key.hashCode;
 
     return GestureDetector(
       onTap: _toggle,
@@ -75,35 +72,30 @@ class _VoiceMessageBubbleState extends State<VoiceMessageBubble> {
           color: mine ? ChatColors.sent : ChatColors.received(context),
           borderRadius: BorderRadius.circular(19),
         ),
-        child: ValueListenableBuilder<ZIMKitAudioPlayStatus>(
-          valueListenable: _player.data.playStatusNotifier,
+        child: ValueListenableBuilder<ChatAudioStatus>(
+          valueListenable: ChatAudioPlayer.status,
           builder: (context, status, _) {
-            final playing = _isPlayingThis(status);
+            final playing = status.key == _key && status.playing;
+            final played = playing ? status.position : null;
+            final progress = played == null || seconds == 0
+                ? 0.0
+                : (played.inMilliseconds / (seconds * 1000)).clamp(0.0, 1.0);
             return Row(
               children: [
-                _PlayButton(
-                  playing: playing,
-                  loading: _audio.fileLocalPath.isEmpty,
-                  mine: mine,
-                ),
+                _PlayButton(playing: playing, loading: _loading, mine: mine),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: playing
-                      ? ValueListenableBuilder<int>(
-                          valueListenable: _player.data.playProcessNotifier,
-                          builder: (context, playedMs, _) => _Waveform(
-                            seed: _id,
-                            progress: seconds == 0
-                                ? 0
-                                : playedMs / (seconds * 1000),
-                            color: foreground,
-                          ),
-                        )
-                      : _Waveform(seed: _id, progress: 0, color: foreground),
+                  child: _Waveform(
+                    seed: seed,
+                    progress: progress,
+                    color: foreground,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  _format(seconds),
+                  ChatTime.duration(
+                    played != null ? played.inSeconds : seconds,
+                  ),
                   style: TextStyle(
                     fontFamily: 'Outfit',
                     fontSize: 13,
@@ -117,12 +109,6 @@ class _VoiceMessageBubbleState extends State<VoiceMessageBubble> {
         ),
       ),
     );
-  }
-
-  static String _format(int seconds) {
-    final m = (seconds ~/ 60).toString().padLeft(2, '0');
-    final s = (seconds % 60).toString().padLeft(2, '0');
-    return '$m:$s';
   }
 }
 

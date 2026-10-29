@@ -20,4 +20,51 @@ abstract final class ChatTime {
 
   static DateTime fromMillis(int millis) =>
       DateTime.fromMillisecondsSinceEpoch(millis);
+
+  static const _weekdays = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
+  static const _months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
+  /// Date header in a chat: "Today", "Yesterday", a weekday within the
+  /// last week, otherwise "12 Oct 2026".
+  static String dateLabel(DateTime time, {DateTime? now}) {
+    final today = _day(now ?? DateTime.now());
+    final days = today.difference(_day(time)).inDays;
+    if (days == 0) return 'Today';
+    if (days == 1) return 'Yesterday';
+    if (days > 1 && days < 7) return _weekdays[time.weekday - 1];
+    return '${time.day} ${_months[time.month - 1]} ${time.year}';
+  }
+
+  static bool sameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
+
+  static DateTime _day(DateTime t) => DateTime(t.year, t.month, t.day);
+
+  /// "00:16" for a duration in seconds.
+  static String duration(int seconds) {
+    final m = (seconds ~/ 60).toString().padLeft(2, '0');
+    final s = (seconds % 60).toString().padLeft(2, '0');
+    return '$m:$s';
+  }
 }

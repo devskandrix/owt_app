@@ -1,5 +1,6 @@
 import '../entities/discover_queue.dart';
 import '../entities/going_tonight_badge.dart';
+import '../entities/like_outcome.dart';
 import '../entities/received_like.dart';
 
 abstract class MatchmakingRepository {
@@ -22,8 +23,8 @@ abstract class MatchmakingRepository {
   /// `GET /matchmaking/discover`: [clubId]'s swipe queue.
   Future<DiscoverQueue> discover({required String clubId, int? limit});
 
-  /// `POST /matchmaking/likes`: swipe right. Returns true on a mutual match.
-  Future<bool> like({required String receiverId, required String clubId});
+  /// `POST /matchmaking/likes`: swipe right.
+  Future<LikeOutcome> like({required String receiverId, required String clubId});
 
   /// `POST /matchmaking/pass`: swipe left.
   Future<void> pass({required String receiverId, required String clubId});

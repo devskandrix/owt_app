@@ -141,6 +141,8 @@ class _MatchViewState extends State<_MatchView> {
     switch (result) {
       case LikeMatched(:final name):
         TopNotice.showSuccess(context, AppStrings.matchItsAMatch(name));
+      case LikeAlreadyMatched():
+        TopNotice.showSuccess(context, AppStrings.matchAlreadyMatched);
       case LikeFailed(:final message):
         TopNotice.showError(context, message);
       case LikeSent():

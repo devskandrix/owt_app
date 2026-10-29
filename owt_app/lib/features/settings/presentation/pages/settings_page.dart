@@ -15,6 +15,7 @@ import '../cubit/settings_state.dart';
 import '../widgets/log_out_dialog.dart';
 import '../widgets/settings_header.dart';
 import '../widgets/settings_row.dart';
+import 'web_page.dart';
 
 /// "Setting" screen: notification/dark-mode toggles, a handful of plain nav
 /// rows, and a "Log out" action. Page-level chrome (background, text) is
@@ -120,11 +121,17 @@ class _SettingsView extends StatelessWidget {
                       ),
                       SettingsRow(
                         label: AppStrings.settingsPrivacyPolicy,
-                        onTap: () {},
+                        onTap: () => context.pushNamed(
+                          AppRoute.webPage.name,
+                          extra: WebPageArgs.privacyPolicy,
+                        ),
                       ),
                       SettingsRow(
                         label: AppStrings.settingsHelpCenter,
-                        onTap: () {},
+                        onTap: () => context.pushNamed(
+                          AppRoute.webPage.name,
+                          extra: WebPageArgs.helpCenter,
+                        ),
                       ),
                       SettingsRow(
                         label: AppStrings.settingsAboutApp,

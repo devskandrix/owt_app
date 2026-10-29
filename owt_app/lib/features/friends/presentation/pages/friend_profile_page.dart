@@ -112,6 +112,7 @@ class _FriendProfileView extends StatelessWidget {
                                     onPressed: () => context.pushNamed(
                                       AppRoute.chat.name,
                                       extra: ChatArgs(
+                                        matchId: cubit.matchId,
                                         userId: profile.id,
                                         name: profile.fullName,
                                         avatarUrl: profile.avatarUrl,

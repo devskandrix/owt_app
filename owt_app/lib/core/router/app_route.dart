@@ -19,6 +19,7 @@ enum AppRoute {
   match('/match'),
   settings('/settings'),
   about('/settings/about'),
+  webPage('/settings/web'),
   notifications('/notifications'),
   messages('/messages'),
   chat('/chat');

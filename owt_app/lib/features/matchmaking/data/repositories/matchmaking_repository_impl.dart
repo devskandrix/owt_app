@@ -4,6 +4,7 @@ import '../../../../core/error/failures.dart';
 import '../../../../core/storage/token_storage.dart';
 import '../../domain/entities/discover_queue.dart';
 import '../../domain/entities/going_tonight_badge.dart';
+import '../../domain/entities/like_outcome.dart';
 import '../../domain/entities/received_like.dart';
 import '../../domain/repositories/matchmaking_repository.dart';
 import '../datasources/matchmaking_remote_data_source.dart';
@@ -103,7 +104,7 @@ class MatchmakingRepositoryImpl implements MatchmakingRepository {
   }
 
   @override
-  Future<bool> like({
+  Future<LikeOutcome> like({
     required String receiverId,
     required String clubId,
   }) async {
@@ -117,7 +118,11 @@ class MatchmakingRepositoryImpl implements MatchmakingRepository {
       if (!envelope.success) {
         throw ServerFailure(envelope.message ?? fallback);
       }
-      return envelope.data?['matched'] == true;
+      final data = envelope.data;
+      // Already matched: the server skips the like and drops a note into
+      // the existing chat instead. Body: `{ alreadyMatched, match, message }`.
+      if (data?['alreadyMatched'] == true) return LikeOutcome.alreadyMatched;
+      return data?['matched'] == true ? LikeOutcome.matched : LikeOutcome.sent;
     } on DioException catch (e) {
       throw _mapDioException(e, fallbackMessage: fallback);
     }

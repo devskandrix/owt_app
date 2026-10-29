@@ -10,7 +10,15 @@ abstract final class Env {
   /// Root server URL without the API path, e.g. `http://host:4000`.
   static String get baseUrl => dotenv.get('BASE_URL');
 
-  /// ZEGOCLOUD project AppID (chat + calls); 0 when not set.
+  /// Chat socket server, e.g. `http://localhost:4000`. Optional: defaults
+  /// to [baseUrl]. A `localhost` host is swapped for [baseUrl]'s host
+  /// (see `ChatSocketService`), since on a phone it means the phone.
+  static String get socketUrl {
+    final value = dotenv.maybeGet('SOCKET_URL')?.trim() ?? '';
+    return value.isEmpty ? baseUrl : value;
+  }
+
+  /// ZEGOCLOUD project AppID (calls); 0 when not set.
   static int get zegoAppId =>
       int.tryParse(dotenv.maybeGet('ZEGO_APP_ID') ?? '') ?? 0;
 
@@ -25,6 +33,6 @@ abstract final class Env {
       dotenv.maybeGet('ZEGO_USE_TOKEN')?.toLowerCase() == 'true' ||
       zegoAppSign.isEmpty;
 
-  /// Whether chat and calls can be used in this build.
+  /// Whether voice / video calls can be used in this build.
   static bool get hasZego => zegoAppId != 0;
 }

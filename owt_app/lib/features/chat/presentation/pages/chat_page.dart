@@ -1,16 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:zego_zimkit/zego_zimkit.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/di/injection_container.dart';
+import '../../../../core/services/chat_socket_service.dart';
 import '../../../../core/services/zego_service.dart';
+import '../../../../core/strings/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../domain/entities/chat_message.dart';
+import '../cubit/chat_room_cubit.dart';
 import '../models/chat_args.dart';
+import '../utils/chat_time.dart';
 import '../widgets/chat_header.dart';
 import '../widgets/chat_input_bar.dart';
 import '../widgets/chat_message_item.dart';
 import '../widgets/chat_unavailable.dart';
 
-/// A 1-to-1 chat (ZEGOCLOUD ZIMKit) with a matched user, with video and
-/// voice call buttons in the header.
+/// A 1-to-1 chat with a matched user. Messages go over our backend (REST +
+/// Socket.IO, see [ChatRoomCubit]); the header's voice and video call
+/// buttons use ZEGOCLOUD.
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key, required this.args});
 
@@ -21,16 +29,21 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  late final Future<void> _ready = ZegoService.login();
+  /// Calls need the ZEGOCLOUD call service, started at sign-in.
+  late final Future<void> _callsReady = ZegoService.login();
+
+  @override
+  void initState() {
+    super.initState();
+    // Normally already connected from Home.
+    ChatSocketService.connect();
+  }
 
   @override
   Widget build(BuildContext context) {
     final args = widget.args;
-    // ZIMKit's own widgets (photo/voice messages, send button) take their
-    // accent from primaryColor.
-    final theme = Theme.of(context).copyWith(primaryColor: ChatColors.sent);
-    return Theme(
-      data: theme,
+    return BlocProvider(
+      create: (_) => ChatRoomCubit(sl(), matchId: args.matchId),
       child: Scaffold(
         backgroundColor: context.appColors.background,
         body: SafeArea(
@@ -38,35 +51,20 @@ class _ChatPageState extends State<ChatPage> {
           child: Column(
             children: [
               FutureBuilder<void>(
-                future: _ready,
-                builder: (context, snapshot) => ChatHeader(
-                  args: args,
-                  showCalls:
-                      snapshot.connectionState == ConnectionState.done &&
-                      ZegoService.isLoggedIn,
-                ),
-              ),
-              Expanded(
-                child: !ZegoService.isAvailable
-                    ? const ChatUnavailable()
-                    : FutureBuilder<void>(
-                        future: _ready,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState !=
-                              ConnectionState.done) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
-                          // Chat widgets query ZEGOCLOUD straight away, so
-                          // only build them once signed in.
-                          if (!ZegoService.isLoggedIn) {
-                            return const ChatUnavailable();
-                          }
-                          return _ChatBody(args: args, theme: theme);
-                        },
+                future: _callsReady,
+                builder: (context, snapshot) =>
+                    BlocSelector<ChatRoomCubit, ChatRoomState, bool>(
+                      selector: (state) => state.otherTyping,
+                      builder: (context, typing) => ChatHeader(
+                        args: args,
+                        typing: typing,
+                        showCalls:
+                            snapshot.connectionState == ConnectionState.done &&
+                            ZegoService.isLoggedIn,
                       ),
+                    ),
               ),
+              Expanded(child: _ChatBody(args: args)),
             ],
           ),
         ),
@@ -75,23 +73,17 @@ class _ChatPageState extends State<ChatPage> {
   }
 }
 
-/// The message list and input bar, built once signed in to ZEGOCLOUD.
 class _ChatBody extends StatefulWidget {
-  const _ChatBody({required this.args, required this.theme});
+  const _ChatBody({required this.args});
 
   final ChatArgs args;
-  final ThemeData theme;
 
   @override
   State<_ChatBody> createState() => _ChatBodyState();
 }
 
 class _ChatBodyState extends State<_ChatBody> {
-  final _recordStatus = ZIMKitRecordStatus();
   final _scrollController = ScrollController();
-
-  /// The same list ZIMKit shows; read to group messages by sender.
-  ZIMKitMessageListNotifier? _messages;
 
   /// Messages further apart than this start a new group (new time label).
   static const _groupGap = Duration(minutes: 5);
@@ -99,92 +91,141 @@ class _ChatBodyState extends State<_ChatBody> {
   @override
   void initState() {
     super.initState();
-    _recordStatus.register();
-    ZIMKit()
-        .getMessageListNotifier(widget.args.zegoId, ZIMKitConversationType.peer)
-        .then((list) {
-          if (mounted) setState(() => _messages = list);
-        })
-        // Only used for grouping; without it every message shows its own
-        // photo and time. ZIMKit's list shows its own error state.
-        .catchError((Object e) {
-          ZegoService.log(
-            'chat ${widget.args.zegoId}: loading messages failed: $e',
-          );
-          return null;
-        });
+    _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
-    _recordStatus.unregister();
     _scrollController.dispose();
     super.dispose();
   }
 
-  bool _sameGroup(ZIMKitMessage a, ZIMKitMessage b) {
-    if (a.isMine != b.isMine) return false;
-    final ta = a.info.timestamp;
-    final tb = b.info.timestamp;
-    // A message still sending may not have a timestamp yet.
-    if (ta == 0 || tb == 0) return true;
-    return (ta - tb).abs() < _groupGap.inMilliseconds;
+  /// The list is reversed, so the oldest messages are at the max extent.
+  void _onScroll() {
+    final position = _scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 400) {
+      context.read<ChatRoomCubit>().loadOlder();
+    }
   }
 
-  Widget _buildItem(
-    BuildContext context,
-    ZIMKitMessage message,
-    Widget defaultWidget,
-  ) {
-    final list = _messages?.value ?? const [];
-    final i = list.indexWhere((n) => identical(n.value, message));
-    final startsGroup = i <= 0 || !_sameGroup(list[i - 1].value, message);
-    final endsGroup =
-        i < 0 ||
-        i == list.length - 1 ||
-        !_sameGroup(list[i + 1].value, message);
-    return ChatMessageItem(
-      message: message,
-      defaultWidget: defaultWidget,
-      avatarUrl: widget.args.avatarUrl,
-      startsGroup: startsGroup,
-      endsGroup: endsGroup,
+  void _scrollToBottom() {
+    if (!_scrollController.hasClients) return;
+    _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOut,
     );
   }
 
+  bool _sameGroup(ChatMessage a, ChatMessage b) =>
+      a.isMine == b.isMine &&
+      ChatTime.sameDay(a.createdAt, b.createdAt) &&
+      a.createdAt.difference(b.createdAt).abs() < _groupGap;
+
   @override
   Widget build(BuildContext context) {
-    final conversationId = widget.args.zegoId;
-    return Stack(
+    final cubit = context.read<ChatRoomCubit>();
+    return Column(
       children: [
-        Column(
-          children: [
-            Expanded(
-              child: ZIMKitMessageListView(
-                conversationID: conversationId,
-                scrollController: _scrollController,
-                theme: widget.theme,
-                itemBuilder: _buildItem,
-              ),
-            ),
-            ChatInputBar(
-              conversationId: conversationId,
-              recordStatus: _recordStatus,
-              listScrollController: _scrollController,
-            ),
-          ],
-        ),
-        // "Slide up to lock" target shown above the mic while recording.
-        Positioned(
-          right: 22,
-          bottom: MediaQuery.viewPaddingOf(context).bottom + 84,
-          child: SizedBox(
-            width: ZIMKitRecordStyle.lockerIconSize,
-            height: ZIMKitRecordStyle.lockerIconSize,
-            child: ZIMKitRecordLocker(processor: _recordStatus),
+        Expanded(
+          child: BlocBuilder<ChatRoomCubit, ChatRoomState>(
+            builder: (context, state) {
+              if (state.status == ChatRoomStatus.loading) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (state.status == ChatRoomStatus.failure) {
+                return GestureDetector(
+                  onTap: cubit.load,
+                  child: ChatUnavailable(
+                    message:
+                        '${state.errorMessage ?? AppStrings.chatLoadFailed}\n'
+                        '${AppStrings.retryLabel}',
+                  ),
+                );
+              }
+              final messages = state.messages;
+              // Reversed list: index 0 is the newest message.
+              final count = messages.length + (state.loadingMore ? 1 : 0);
+              return ListView.builder(
+                controller: _scrollController,
+                reverse: true,
+                padding: const EdgeInsets.only(bottom: 12),
+                itemCount: count,
+                itemBuilder: (context, index) {
+                  if (index >= messages.length) {
+                    return const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Center(
+                        child: SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                    );
+                  }
+                  final i = messages.length - 1 - index;
+                  final message = messages[i];
+                  final previous = i > 0 ? messages[i - 1] : null;
+                  final next = i < messages.length - 1 ? messages[i + 1] : null;
+                  final newDay =
+                      previous == null ||
+                      !ChatTime.sameDay(previous.createdAt, message.createdAt);
+                  return Column(
+                    key: ValueKey(message.key),
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (newDay) _DateHeader(date: message.createdAt),
+                      ChatMessageItem(
+                        message: message,
+                        avatarUrl: widget.args.avatarUrl,
+                        startsGroup: newDay || !_sameGroup(previous, message),
+                        endsGroup: next == null || !_sameGroup(next, message),
+                        onRetry: () => cubit.retry(message),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
           ),
         ),
+        ChatInputBar(
+          onTextChanged: cubit.inputChanged,
+          onSendText: (text) {
+            cubit.sendText(text);
+            _scrollToBottom();
+          },
+          onSendMedia: (file, type, {durationSeconds}) {
+            cubit.sendMedia(file, type, durationSeconds: durationSeconds);
+            _scrollToBottom();
+          },
+        ),
       ],
+    );
+  }
+}
+
+/// "Today" / "Yesterday" / "12 Oct 2026" between days.
+class _DateHeader extends StatelessWidget {
+  const _DateHeader({required this.date});
+
+  final DateTime date;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 20, bottom: 2),
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: ChatColors.received(context),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(ChatTime.dateLabel(date), style: AppTextStyles.chatTime),
+        ),
+      ),
     );
   }
 }

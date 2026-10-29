@@ -5,6 +5,7 @@ import '../../../../core/error/failures.dart';
 import '../../../../core/strings/app_strings.dart';
 import '../../../matchmaking/domain/entities/discover_profile.dart';
 import '../../../matchmaking/domain/entities/discover_queue.dart';
+import '../../../matchmaking/domain/entities/like_outcome.dart';
 import '../../../matchmaking/domain/usecases/discover_profiles.dart';
 import '../../../matchmaking/domain/usecases/join_match_queue.dart';
 import '../../../matchmaking/domain/usecases/like_profile.dart';
@@ -103,6 +104,12 @@ class LikeSent extends LikeResult {
 class LikeMatched extends LikeResult {
   const LikeMatched(this.name);
   final String name;
+}
+
+/// Already matched with this person: the server posted a note into the
+/// existing chat instead. No match animation, no navigation.
+class LikeAlreadyMatched extends LikeResult {
+  const LikeAlreadyMatched();
 }
 
 class LikeFailed extends LikeResult {
@@ -209,10 +216,14 @@ class MatchDeckCubit extends Cubit<MatchDeckState> {
     _advance();
     if (profile == null) return const LikeSent();
     try {
-      final matched = await _likeProfile(
+      final outcome = await _likeProfile(
         LikeProfileParams(receiverId: profile.id, clubId: clubId),
       );
-      return matched ? LikeMatched(profile.fullName) : const LikeSent();
+      return switch (outcome) {
+        LikeOutcome.matched => LikeMatched(profile.fullName),
+        LikeOutcome.alreadyMatched => const LikeAlreadyMatched(),
+        LikeOutcome.sent => const LikeSent(),
+      };
     } on Failure catch (f) {
       return LikeFailed(f.message);
     } catch (_) {

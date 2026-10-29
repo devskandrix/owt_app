@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 
 import '../../features/chat/data/datasources/zego_token_remote_data_source.dart';
+import '../../features/chat/data/repositories/chat_repository_impl.dart';
+import '../../features/chat/domain/repositories/chat_repository.dart';
 import '../../features/chat/data/repositories/zego_token_repository_impl.dart';
 import '../../features/chat/domain/repositories/zego_token_repository.dart';
 import '../../features/chat/domain/usecases/get_zego_token.dart';
@@ -190,6 +192,9 @@ Future<void> initDependencies({
   );
 
   // Features - Chat (ZEGOCLOUD token for live mode)
+  sl.registerLazySingleton<ChatRepository>(
+    () => ChatRepositoryImpl(sl(), sl()),
+  );
   sl.registerLazySingleton(() => GetZegoToken(sl()));
   sl.registerLazySingleton<ZegoTokenRepository>(
     () => ZegoTokenRepositoryImpl(sl()),

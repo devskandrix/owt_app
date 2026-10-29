@@ -10,13 +10,22 @@ import '../../../../gen/assets.gen.dart';
 import '../models/chat_args.dart';
 import '../utils/call_permissions.dart';
 import 'chat_avatar.dart';
+import 'chat_message_item.dart';
 
-/// Back chevron, the other person's photo and name, then video and voice
-/// call buttons.
+/// Back chevron, the other person's photo and name ("typing…" under it
+/// while they type), then video and voice call buttons (ZEGOCLOUD).
 class ChatHeader extends StatelessWidget {
-  const ChatHeader({super.key, required this.args, required this.showCalls});
+  const ChatHeader({
+    super.key,
+    required this.args,
+    required this.showCalls,
+    this.typing = false,
+  });
 
   final ChatArgs args;
+
+  /// Whether the other person is typing.
+  final bool typing;
 
   /// Whether to show the call buttons. Only true once signed in to
   /// ZEGOCLOUD: the call service starts then, and tapping a call button
@@ -47,11 +56,26 @@ class ChatHeader extends StatelessWidget {
           ChatAvatar(url: args.avatarUrl, size: 42),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              args.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.chatHeaderName.copyWith(color: textColor),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  args.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.chatHeaderName.copyWith(
+                    color: textColor,
+                  ),
+                ),
+                if (typing)
+                  Text(
+                    AppStrings.chatTyping,
+                    style: AppTextStyles.chatTime.copyWith(
+                      color: ChatColors.sent,
+                    ),
+                  ),
+              ],
             ),
           ),
           if (showCalls) ...[

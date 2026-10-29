@@ -4,12 +4,10 @@ import 'package:flutter/services.dart';
 import '../../../../core/strings/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
-import '../../../../core/widgets/gradient_button.dart';
 import '../../../../core/widgets/top_notice.dart';
 import '../../../settings/presentation/widgets/settings_header.dart';
-import '../../../settings/presentation/widgets/settings_row.dart';
+import '../widgets/about_cards.dart';
 import '../widgets/about_feature_card.dart';
-import '../widgets/about_gradient_box.dart';
 import '../widgets/about_hero.dart';
 import '../widgets/about_step_tile.dart';
 
@@ -107,46 +105,29 @@ class AboutPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 28),
-                  const _SafetyBox(),
-                  const SizedBox(height: 16),
-                  AboutGradientBox(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          AppStrings.aboutPartnerTitle,
-                          style: AppTextStyles.aboutItemTitle.copyWith(
-                            color: colors.strongText,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          AppStrings.aboutPartnerDesc,
-                          style: AppTextStyles.aboutItemDesc.copyWith(
-                            color: colors.textMuted,
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        GradientButton(
-                          label: AppStrings.aboutPartnerAction,
-                          onPressed: () =>
-                              _copyEmail(context, AppStrings.aboutPartnerEmail),
-                        ),
-                      ],
-                    ),
+                  const AboutSafetyCard(
+                    title: AppStrings.aboutSafetyTitle,
+                    points: [
+                      AppStrings.aboutSafety1,
+                      AppStrings.aboutSafety2,
+                      AppStrings.aboutSafety3,
+                      AppStrings.aboutSafety4,
+                    ],
                   ),
-                  const SizedBox(height: 16),
-                  SettingsRow(
-                    label: AppStrings.aboutContactUs,
-                    showDivider: false,
+                  const SizedBox(height: 12),
+                  AboutPartnerCard(
+                    title: AppStrings.aboutPartnerTitle,
+                    description: AppStrings.aboutPartnerDesc,
+                    actionLabel: AppStrings.aboutPartnerAction,
+                    onAction: () =>
+                        _copyEmail(context, AppStrings.aboutPartnerEmail),
+                  ),
+                  const SizedBox(height: 12),
+                  AboutContactCard(
+                    title: AppStrings.aboutContactUs,
+                    email: AppStrings.aboutSupportEmail,
                     onTap: () =>
                         _copyEmail(context, AppStrings.aboutSupportEmail),
-                    trailing: Text(
-                      AppStrings.aboutSupportEmail,
-                      style: AppTextStyles.aboutItemDesc.copyWith(
-                        color: colors.textMuted,
-                      ),
-                    ),
                   ),
                   const SizedBox(height: 28),
                   Text(
@@ -205,70 +186,6 @@ class _CardRow extends StatelessWidget {
           Expanded(child: left),
           const SizedBox(width: 12),
           Expanded(child: right),
-        ],
-      ),
-    );
-  }
-}
-
-class _SafetyBox extends StatelessWidget {
-  const _SafetyBox();
-
-  static const _points = [
-    AppStrings.aboutSafety1,
-    AppStrings.aboutSafety2,
-    AppStrings.aboutSafety3,
-    AppStrings.aboutSafety4,
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return AboutGradientBox(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.shield_outlined, color: colors.strongText, size: 22),
-              const SizedBox(width: 10),
-              Text(
-                AppStrings.aboutSafetyTitle,
-                style: AppTextStyles.aboutItemTitle.copyWith(
-                  color: colors.strongText,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          for (final point in _points)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 6, right: 10),
-                    child: Container(
-                      width: 5,
-                      height: 5,
-                      decoration: const BoxDecoration(
-                        color: AppColors.brandPink,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      point,
-                      style: AppTextStyles.aboutItemDesc.copyWith(
-                        color: colors.textMuted,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
         ],
       ),
     );

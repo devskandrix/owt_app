@@ -106,6 +106,7 @@ class _FriendsView extends StatelessWidget {
                                         onTap: () => context.pushNamed(
                                           AppRoute.chat.name,
                                           extra: ChatArgs(
+                                            matchId: friend.matchId,
                                             userId: friend.userId,
                                             name: friend.name,
                                             avatarUrl: friend.avatarUrl,

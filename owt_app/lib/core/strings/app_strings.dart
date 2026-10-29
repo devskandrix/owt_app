@@ -190,6 +190,8 @@ abstract final class AppStrings {
       'Your Going Tonight badge is for another club. Head to this club and verify again to see who’s here.';
   static String matchItsAMatch(String name) =>
       'It’s a match! You and $name like each other.';
+  static const String matchAlreadyMatched =
+      'Already matched — sent them a note 💛';
   static const String matchVenueCity = 'Ibiza';
 
   // ---------------------------------------------------------------------
@@ -254,17 +256,19 @@ abstract final class AppStrings {
   static const String settingsDarkMode = 'Dark Mode';
   static const String settingsPrivacyPolicy = 'Privacy & Policy';
   static const String settingsHelpCenter = 'Help Center';
+  static const String webPageLoadFailed =
+      'Couldn’t load this page. Check your connection and try again.';
   static const String settingsAboutApp = 'About App';
-  static const String settingsDeactivateAccount = 'De active Account';
+  static const String settingsDeactivateAccount = 'Delete Account';
   static const String settingsLogOut = 'Log out';
   static const String logOutConfirmTitle = 'Log out?';
   static const String logOutConfirmMessage =
       'You’ll need to sign in again to see who’s going tonight.';
   static const String cancelLabel = 'Cancel';
-  static const String deactivateConfirmTitle = 'Deactivate account?';
+  static const String deactivateConfirmTitle = 'Delete account?';
   static const String deactivateConfirmMessage =
       'Your profile will be hidden and you’ll be signed out.';
-  static const String deactivateConfirmLabel = 'Deactivate';
+  static const String deactivateConfirmLabel = 'Delete';
 
   // ---------------------------------------------------------------------
   // About App screen
@@ -319,13 +323,13 @@ abstract final class AppStrings {
   static const String aboutPartnerDesc =
       'Partner with OWT to feature your venue, promote events and reach '
       'people who are going out tonight.';
-  static const String aboutPartnerAction = 'Partner with us';
+  static const String aboutPartnerAction = 'Connect';
 
   static const String aboutContactUs = 'Contact Us';
   static const String aboutEmailCopied = 'Email copied to clipboard.';
 
-  // TODO: replace with the real support and partnership addresses.
-  static const String aboutSupportEmail = 'support@owtapp.com';
+  // TODO: replace with the real partnership address.
+  static const String aboutSupportEmail = 'support@owt.app';
   static const String aboutPartnerEmail = 'partners@owtapp.com';
 
   static const String aboutFooter = 'Made for nights out';
@@ -338,7 +342,7 @@ abstract final class AppStrings {
   static const String notificationsEmpty = 'No notifications yet';
 
   // ---------------------------------------------------------------------
-  // Chat (ZEGOCLOUD)
+  // Chat (messages over our backend; calls over ZEGOCLOUD)
   // ---------------------------------------------------------------------
   static const String messagesTitle = 'Messages';
   static const String messageFriend = 'Message';
@@ -362,7 +366,16 @@ abstract final class AppStrings {
   static const String chatFile = 'File';
   static const String chatInputHint = 'Type Something..';
   static const String chatCopied = 'Message copied';
-  static const String chatSendFailed = 'Not sent';
+  static const String chatSendFailed = 'Not sent · Tap to retry';
+  static const String chatTyping = 'typing…';
+  static const String chatLoadFailed = 'Couldn’t load this chat.';
+  static const String chatSlideToCancel = 'Slide to cancel';
+  static const String chatHoldToRecord = 'Hold the mic to record';
+  static const String chatMicDenied =
+      'Microphone access is needed to send voice messages.';
+  static const String chatMediaSourceTitle = 'Send';
+  static const String chatChooseMedia = 'Photo or video from library';
+  static const String chatPlaybackFailed = 'Couldn’t play this message.';
   static const String notificationQueueRemovedTitle = 'Removed from queue';
   static const String notificationDefaultTitle = 'Notification';
 

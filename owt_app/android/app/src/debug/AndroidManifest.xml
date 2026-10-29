@@ -4,4 +4,7 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Lets web views (Privacy Policy, Help Center) load pages from the
+         plain-http dev server. Not in release builds, which should use https. -->
+    <application android:usesCleartextTraffic="true"/>
 </manifest>

@@ -6,6 +6,7 @@ import '../../../../core/di/injection_container.dart';
 import '../../../../core/router/app_route.dart';
 import '../../../../core/services/location_service.dart';
 import '../../../../core/services/push_notification_service.dart';
+import '../../../../core/services/chat_socket_service.dart';
 import '../../../../core/services/zego_service.dart';
 import '../../../../core/strings/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -59,7 +60,9 @@ class _DashboardViewState extends State<_DashboardView> {
   /// Location first, then notifications, so the two prompts never overlap.
   /// Home is the first signed-in screen for new and returning users alike.
   Future<void> _askForPermissions() async {
-    // Chat + calls sign-in needs no prompt, so start it right away.
+    // Chat (socket) and calls (ZEGOCLOUD) need no prompt, so start them
+    // right away.
+    ChatSocketService.connect();
     ZegoService.login();
     await _maybeAskForLocation();
     if (!mounted) return;
@@ -146,7 +149,7 @@ class _DashboardViewState extends State<_DashboardView> {
                             DashboardSectionHeader(
                               title: AppStrings.trendingSectionTitle,
                               showTrendingIcon: true,
-                              showViewAll: clubs.trending.isNotEmpty,
+                              showViewAll: false,
                             ),
                             const SizedBox(height: 12),
                             if (clubs.trending.isEmpty)

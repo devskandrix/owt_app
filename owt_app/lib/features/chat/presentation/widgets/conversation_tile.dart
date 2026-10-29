@@ -1,29 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:zego_zimkit/zego_zimkit.dart';
 
 import '../../../../core/strings/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../domain/entities/chat_conversation.dart';
+import '../../domain/entities/chat_message.dart';
 import '../utils/chat_time.dart';
 import 'chat_avatar.dart';
 
 /// One row on the Messages screen: photo, name, a preview line, and a
-/// purple dot when there are unread messages. Only chats that have
-/// messages are listed, so [lastMessage] is always set.
+/// purple dot when there are unread messages.
 class ConversationTile extends StatelessWidget {
   const ConversationTile({
     super.key,
-    required this.name,
-    required this.avatarUrl,
-    required this.onTap,
     required this.conversation,
-    required this.lastMessage,
+    required this.onTap,
   });
 
-  final String name;
-  final String? avatarUrl;
-  final ZIMKitConversation conversation;
-  final ZIMKitMessage lastMessage;
+  final ChatConversation conversation;
   final VoidCallback onTap;
 
   /// Purple used for the unread dot and sent chat bubbles.
@@ -32,7 +26,8 @@ class ConversationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final unread = conversation.unreadMessageCount;
+    final unread = conversation.unreadCount;
+    final lastMessage = conversation.lastMessage;
 
     return InkWell(
       onTap: onTap,
@@ -40,22 +35,24 @@ class ConversationTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
         child: Row(
           children: [
-            ChatAvatar(url: avatarUrl, size: 62),
+            ChatAvatar(url: conversation.avatarUrl, size: 62),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    name,
+                    conversation.name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.conversationName.copyWith(
                       color: colors.textPrimary,
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  _PreviewLine(message: lastMessage, unread: unread),
+                  if (lastMessage != null) ...[
+                    const SizedBox(height: 6),
+                    _PreviewLine(message: lastMessage, unread: unread),
+                  ],
                 ],
               ),
             ),
@@ -82,7 +79,7 @@ class ConversationTile extends StatelessWidget {
 class _PreviewLine extends StatelessWidget {
   const _PreviewLine({required this.message, required this.unread});
 
-  final ZIMKitMessage message;
+  final ChatMessage message;
   final int unread;
 
   @override
@@ -96,9 +93,7 @@ class _PreviewLine extends StatelessWidget {
     final style = AppTextStyles.conversationPreview.copyWith(
       color: hasUnread ? colors.textPrimary : colors.textMuted,
     );
-    final time = message.info.timestamp > 0
-        ? ChatTime.ago(ChatTime.fromMillis(message.info.timestamp))
-        : null;
+    final time = ChatTime.ago(message.createdAt);
 
     return Row(
       children: [
@@ -110,25 +105,16 @@ class _PreviewLine extends StatelessWidget {
             style: style,
           ),
         ),
-        if (time != null) Text('  •  $time', style: style),
+        Text('  •  $time', style: style),
       ],
     );
   }
 
-  static String _describe(ZIMKitMessage message) {
-    switch (message.type) {
-      case ZIMKitMessageType.text:
-        return message.textContent?.text.replaceAll('\n', ' ') ?? '';
-      case ZIMKitMessageType.image:
-        return AppStrings.chatPhoto;
-      case ZIMKitMessageType.video:
-        return AppStrings.chatVideo;
-      case ZIMKitMessageType.audio:
-        return AppStrings.chatVoiceMessage;
-      case ZIMKitMessageType.file:
-        return AppStrings.chatFile;
-      default:
-        return '';
-    }
-  }
+  static String _describe(ChatMessage message) => switch (message.type) {
+    ChatMessageType.text => (message.content ?? '').replaceAll('\n', ' '),
+    ChatMessageType.image => AppStrings.chatPhoto,
+    ChatMessageType.video => AppStrings.chatVideo,
+    ChatMessageType.audio => AppStrings.chatVoiceMessage,
+    ChatMessageType.unknown => AppStrings.chatFile,
+  };
 }
